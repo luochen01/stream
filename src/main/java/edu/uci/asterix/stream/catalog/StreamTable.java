@@ -9,28 +9,16 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.schema.Schema;
-import org.apache.calcite.schema.Schema.TableType;
-import org.apache.calcite.schema.TranslatableTable;
-import org.apache.calcite.schema.impl.AbstractTable;
+import org.apache.calcite.schema.StreamableTable;
+import org.apache.calcite.schema.Table;
 import org.apache.calcite.util.Source;
 
 import edu.uci.asterix.stream.execution.rules.StreamTableScan;
 
-public class StreamTable extends AbstractTable implements TranslatableTable {
-    protected final StreamSchema schema;
-    protected final String tableName;
-    protected final Schema.TableType tableType;
-    protected final Source source;
+public class StreamTable extends BaseTable implements StreamableTable {
 
-    protected final List<RelDataTypeField> fields;
-
-    public StreamTable(StreamSchema schema, String tableName, TableType tableType, Source source,
-            List<RelDataTypeField> fields) {
-        this.schema = schema;
-        this.tableName = tableName;
-        this.tableType = tableType;
-        this.source = source;
-        this.fields = fields;
+    public StreamTable(StreamSchema schema, String tableName, Source source, List<RelDataTypeField> fields) {
+        super(schema, tableName, Schema.TableType.STREAM, source, fields);
     }
 
     @Override
@@ -38,17 +26,18 @@ public class StreamTable extends AbstractTable implements TranslatableTable {
         return typeFactory.createStructType(fields);
     }
 
-    public Schema.TableType getTableType() {
-        return tableType;
+    public String getTableName() {
+        return tableName;
+    }
+
+    @Override
+    public Table stream() {
+        return this;
     }
 
     @Override
     public RelNode toRel(ToRelContext context, RelOptTable relOptTable) {
         return new StreamTableScan(context.getCluster(), relOptTable, this);
-    }
-
-    public String getTableName() {
-        return tableName;
     }
 
 }

@@ -6,14 +6,20 @@ import java.util.List;
 import org.apache.calcite.config.Lex;
 import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.ConventionTraitDef;
-import org.apache.calcite.plan.RelOptCostImpl;
+import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelTraitDef;
 import org.apache.calcite.rel.RelCollationTraitDef;
+import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
+import org.apache.calcite.rel.rules.FilterMergeRule;
+import org.apache.calcite.rel.rules.FilterProjectTransposeRule;
+import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
+import org.apache.calcite.rel.rules.ProjectFilterTransposeRule;
+import org.apache.calcite.rel.rules.ProjectMergeRule;
+import org.apache.calcite.rel.stream.StreamRules;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelDataTypeFieldImpl;
-import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.schema.Schema;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.parser.SqlParseException;
@@ -25,20 +31,26 @@ import org.apache.calcite.tools.Planner;
 import org.apache.calcite.tools.RelConversionException;
 import org.apache.calcite.tools.RuleSets;
 import org.apache.calcite.tools.ValidationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import edu.uci.asterix.stream.catalog.BaseTable;
 import edu.uci.asterix.stream.catalog.Catalog;
 import edu.uci.asterix.stream.catalog.CatalogException;
 import edu.uci.asterix.stream.catalog.StreamSchema;
 import edu.uci.asterix.stream.catalog.StreamTable;
 import edu.uci.asterix.stream.execution.operators.IStreamOperator;
 import edu.uci.asterix.stream.execution.rules.StreamConvention;
-import edu.uci.asterix.stream.execution.rules.StreamConverterRules;
 import edu.uci.asterix.stream.execution.rules.StreamRel;
+import edu.uci.asterix.stream.global.StreamGlobal;
 
 public class Example {
 
+    private static final Logger logger = LoggerFactory.getLogger(Example.class);
+
     public static void main(String[] args)
             throws SqlParseException, CatalogException, ValidationException, RelConversionException {
+        logger.error("Start");
         initCatalog();
 
         List<RelTraitDef> traitDefs = new ArrayList<RelTraitDef>();
@@ -47,18 +59,28 @@ public class Example {
         traitDefs.add(RelCollationTraitDef.INSTANCE);
 
         ConfigBuilder builder = Frameworks.newConfigBuilder();
+
         builder.parserConfig(SqlParser.configBuilder().setLex(Lex.MYSQL).build());
         builder.traitDefs(traitDefs);
         builder.context(Contexts.EMPTY_CONTEXT);
 
-        builder.ruleSets(RuleSets.ofList(StreamConverterRules.RULES));
-        builder.costFactory(RelOptCostImpl.FACTORY);
-        builder.typeSystem(RelDataTypeSystem.DEFAULT);
-        builder.defaultSchema(Catalog.instance().plus());
+        List<RelOptRule> rules = new ArrayList<>();
+        rules.add(ProjectFilterTransposeRule.INSTANCE);
+        rules.add(FilterProjectTransposeRule.INSTANCE);
+        rules.add(ProjectMergeRule.INSTANCE);
+        rules.add(FilterMergeRule.INSTANCE);
+        rules.add(LoptOptimizeJoinRule.INSTANCE);
+        rules.addAll(StreamRules.RULES);
+
+        builder.ruleSets(RuleSets.ofList(rules));
+        builder.costFactory(StreamGlobal.DEFAULT_COST_FACTORY);
+        builder.typeSystem(StreamGlobal.DEFAULT_TYPE_SYSTEM);
+        builder.defaultSchema(StreamGlobal.DEFAULT_CATALOG.plus());
 
         Planner planner = Frameworks.getPlanner(builder.build());
+
         //parse syntax tree
-        SqlNode sqlNode = planner.parse("select user_name from sample.users");
+        SqlNode sqlNode = planner.parse("select stream user_name from sample.users where user_name = 'Chen'");
 
         //validation
         SqlNode validatedSqlNode = planner.validate(sqlNode);
@@ -68,9 +90,14 @@ public class Example {
 
         System.out.println(root.project());
 
-        //query optimization/planning
-        StreamRel physical = (StreamRel) planner.transform(0, root.rel.getTraitSet().replace(StreamConvention.INSTANCE),
+        //query optimization
+        RelNode optimized = planner.transform(0, planner.getEmptyTraitSet().replace(StreamConvention.INSTANCE),
                 root.rel);
+        System.out.println(optimized);
+
+        //planning
+        StreamRel physical = (StreamRel) planner.transform(0,
+                planner.getEmptyTraitSet().replace(StreamConvention.INSTANCE), optimized);
         System.out.println(physical);
 
         //from optimized plan -> stream operators
@@ -81,7 +108,7 @@ public class Example {
     }
 
     private static void initCatalog() throws CatalogException {
-        Catalog.instance().add("sample", getSampleSchema(Catalog.defaultTypeFactory()));
+        Catalog.INSTANCE.add("sample", getSampleSchema(StreamGlobal.DEFAULT_TYPE_FACTORY));
 
     }
 
@@ -91,7 +118,7 @@ public class Example {
         fields.add(new RelDataTypeFieldImpl("user_id", 0, typeFactory.createSqlType(SqlTypeName.INTEGER)));
         fields.add(new RelDataTypeFieldImpl("user_name", 1, typeFactory.createSqlType(SqlTypeName.VARCHAR, 50)));
 
-        StreamTable table = new StreamTable(schema, "users", Schema.TableType.STREAM, null, fields);
+        BaseTable table = new StreamTable(schema, "users", null, fields);
         schema.addTable(table.getTableName(), table);
         return schema;
     }

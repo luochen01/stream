@@ -6,12 +6,12 @@ import java.util.List;
 
 import org.apache.calcite.rel.type.RelDataType;
 
-import edu.uci.asterix.stream.catalog.Catalog;
 import edu.uci.asterix.stream.catalog.StreamTable;
 import edu.uci.asterix.stream.execution.ITuple;
 import edu.uci.asterix.stream.execution.impl.ObjectTuple;
+import edu.uci.asterix.stream.global.StreamGlobal;
 
-public class StreamScanOperator extends LeafStreamOperator {
+public class StreamScanOperator extends LeafStreamOperator<StreamTable> {
 
     private List<ITuple> data;
 
@@ -45,7 +45,7 @@ public class StreamScanOperator extends LeafStreamOperator {
 
     @Override
     public RelDataType getFields() {
-        return table.getRowType(Catalog.defaultTypeFactory());
+        return table.getRowType(StreamGlobal.DEFAULT_TYPE_FACTORY);
     }
 
 }

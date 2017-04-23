@@ -1,4 +1,4 @@
-package edu.uci.asterix.stream.conf;
+package edu.uci.asterix.stream.global;
 
 import java.io.FileInputStream;
 import java.io.IOException;

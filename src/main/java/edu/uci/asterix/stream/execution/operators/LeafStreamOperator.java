@@ -1,12 +1,20 @@
 package edu.uci.asterix.stream.execution.operators;
 
-import edu.uci.asterix.stream.catalog.StreamTable;
+import org.apache.calcite.rel.type.RelDataType;
 
-public abstract class LeafStreamOperator extends AbstractStreamOperator {
+import edu.uci.asterix.stream.catalog.BaseTable;
+import edu.uci.asterix.stream.global.StreamGlobal;
 
-    protected final StreamTable table;
+public abstract class LeafStreamOperator<T extends BaseTable> extends AbstractStreamOperator {
 
-    public LeafStreamOperator(StreamTable table) {
+    protected final T table;
+
+    public LeafStreamOperator(T table) {
         this.table = table;
+    }
+
+    @Override
+    public RelDataType getFields() {
+        return table.getRowType(StreamGlobal.DEFAULT_TYPE_FACTORY);
     }
 }
