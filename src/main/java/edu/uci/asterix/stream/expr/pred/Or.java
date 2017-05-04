@@ -4,8 +4,8 @@ import edu.uci.asterix.stream.execution.Tuple;
 
 public class Or extends BinaryPredicateExpr {
 
-    public Or(RelationExpr left, RelationExpr right) {
-        super(left, right);
+    public Or(TermExpr left, TermExpr right) {
+        super("OR", left, right);
     }
 
     @Override

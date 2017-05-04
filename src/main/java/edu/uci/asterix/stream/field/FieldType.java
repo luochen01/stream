@@ -26,6 +26,8 @@ public interface FieldType {
 
     public boolean compatible(FieldType another);
 
-    public int getFieldIndex(Field field);
+    public int getFieldIndex(String field);
+
+    public Field getField(String field);
 
 }

@@ -7,8 +7,9 @@ import edu.uci.asterix.stream.utils.Assertion;
 public class Avg extends AggregateExpr {
 
     public Avg(Expr child) {
-        super(child);
-        Assertion.asserts(child.getResultType().getFieldTypeName().isNumerical());
+        super("AVG", child);
+        Assertion.asserts(child.getResultType().getFieldTypeName().isNumerical(),
+                "AVG only applies to numerical field");
     }
 
     @Override

@@ -4,7 +4,8 @@ public abstract class UnaryExpr extends Expr {
 
     protected final Expr child;
 
-    public UnaryExpr(Expr child) {
+    public UnaryExpr(String symbol, Expr child) {
+        super(symbol);
         this.child = child;
     }
 

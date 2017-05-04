@@ -1,46 +1,18 @@
 package edu.uci.asterix.stream.catalog;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.StructType;
 
-public class Table {
+public interface Table {
+    public String getTableName();
 
-    private final String tableName;
+    public List<Field> getFields();
 
-    private final List<Field> fields = new ArrayList<>();
+    public Field getField(String name);
 
-    private final Map<String, Field> fieldMap = new HashMap<>();
+    public void addField(Field field) throws CatalogException;
 
-    public Table(String tableName) {
-        this.tableName = tableName;
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public List<Field> getFields() {
-        return fields;
-    }
-
-    public Field getField(String name) {
-        return fieldMap.get(name);
-    }
-
-    public void addField(Field field) throws CatalogException {
-        if (getField(field.getFieldName()) != null) {
-            throw new CatalogException("Field " + field.getFieldName() + " already exists in table" + tableName);
-        }
-        fields.add(field);
-        fieldMap.put(field.getFieldName(), field);
-    }
-
-    public StructType getSchema() {
-        return new StructType(fields);
-    }
+    public StructType getSchema();
 }

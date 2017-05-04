@@ -7,8 +7,9 @@ import edu.uci.asterix.stream.utils.Assertion;
 public class Sum extends AggregateExpr {
 
     public Sum(Expr child) {
-        super(child);
-        Assertion.asserts(child.getResultType().getFieldTypeName().isNumerical());
+        super("SUM", child);
+        Assertion.asserts(child.getResultType().getFieldTypeName().isNumerical(),
+                "SUM only applies to numerical field");
     }
 
     @Override

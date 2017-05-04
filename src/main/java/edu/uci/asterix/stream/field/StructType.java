@@ -12,6 +12,16 @@ public class StructType extends AbstractFieldType {
     }
 
     @Override
+    public int getFieldIndex(String field) {
+        for (int i = 0; i < fields.size(); i++) {
+            if (fields.get(i).getFieldName().equals(field)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Override
     public List<Field> getFields() {
         return fields;
     }
@@ -22,8 +32,13 @@ public class StructType extends AbstractFieldType {
     }
 
     @Override
-    public int getFieldIndex(Field field) {
-        return fields.indexOf(field);
+    public Field getField(String fieldName) {
+        for (Field field : fields) {
+            if (field.getFieldName().equals(fieldName)) {
+                return field;
+            }
+        }
+        return null;
     }
 
     @Override

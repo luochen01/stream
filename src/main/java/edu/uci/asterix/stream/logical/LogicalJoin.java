@@ -1,21 +1,42 @@
 package edu.uci.asterix.stream.logical;
 
-import edu.uci.asterix.stream.expr.pred.PredicateExpr;
+import java.util.ArrayList;
+import java.util.List;
+
+import edu.uci.asterix.stream.expr.pred.LogicExpr;
+import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.StructType;
 
 public class LogicalJoin extends BinaryLogicalPlan {
 
-    protected PredicateExpr condition;
+    private LogicExpr condition;
 
-    public LogicalJoin(LogicalPlan left, LogicalPlan right, PredicateExpr condition) {
+    private StructType schema;
+
+    public LogicalJoin(LogicalPlan left, LogicalPlan right, LogicExpr condition) {
         super(left, right);
         this.condition = condition;
+
+        List<Field> fields = new ArrayList<>();
+        fields.addAll(left.getSchema().getFields());
+        fields.addAll(right.getSchema().getFields());
+        schema = new StructType(fields);
     }
 
     @Override
     public StructType getSchema() {
-        //TODO
-        return null;
+        return schema;
+    }
+
+    @Override
+    public String getName() {
+        return "JOIN";
+    }
+
+    @Override
+    protected void printContent(StringBuilder sb) {
+        sb.append(condition);
+
     }
 
 }

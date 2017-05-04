@@ -4,7 +4,6 @@ import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.LeafExpr;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.FieldType;
-import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.utils.Assertion;
 
 public class FieldAccess extends LeafExpr {
@@ -13,10 +12,13 @@ public class FieldAccess extends LeafExpr {
 
     private final int fieldIndex;
 
-    public FieldAccess(Field field, StructType schema) {
+    public FieldAccess(Field field, int fieldIndex) {
+        super(field.getFieldName());
         this.field = field;
-        this.fieldIndex = schema.getFieldIndex(field);
-        Assertion.asserts(schema.getFieldIndex(field) >= 0);
+        this.fieldIndex = fieldIndex;
+        if (this.field != Field.ALL_FIELDS) {
+            Assertion.asserts(fieldIndex >= 0);
+        }
     }
 
     @Override
@@ -27,6 +29,33 @@ public class FieldAccess extends LeafExpr {
     @Override
     public Object eval(Tuple input) {
         return input.get(fieldIndex);
+    }
+
+    @Override
+    public Field toField() {
+        return field;
+    }
+
+    @Override
+    public String toString() {
+        return field.getFieldName();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        FieldAccess other = (FieldAccess) obj;
+        if (field == null) {
+            if (other.field != null)
+                return false;
+        } else if (!field.equals(other.field))
+            return false;
+        return true;
     }
 
 }

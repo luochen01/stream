@@ -10,4 +10,9 @@ public abstract class BinaryLogicalPlan extends LogicalPlan {
         this.right = right;
     }
 
+    @Override
+    public LogicalPlan[] children() {
+        return new LogicalPlan[] { left, right };
+    }
+
 }

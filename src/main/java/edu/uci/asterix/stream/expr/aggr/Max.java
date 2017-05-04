@@ -7,8 +7,9 @@ import edu.uci.asterix.stream.utils.Assertion;
 public class Max extends AggregateExpr {
 
     public Max(Expr child) {
-        super(child);
-        Assertion.asserts(child.getResultType().getFieldTypeName().isNumerical());
+        super("MAX", child);
+        Assertion.asserts(child.getResultType().getFieldTypeName().isNumerical(),
+                "MAX only applies to numerical field");
     }
 
     @Override

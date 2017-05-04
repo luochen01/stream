@@ -18,10 +18,13 @@ public class ArrayGetItem extends Expr {
     protected final Expr ordinal;
 
     public ArrayGetItem(Expr child, Expr ordinal) {
+        super("[]");
         this.child = child;
         this.ordinal = ordinal;
-        Assertion.asserts(child.getResultType().getFieldTypeName() == FieldTypeName.ARRAY);
-        Assertion.asserts(ordinal.getResultType().getFieldTypeName() == FieldTypeName.INTEGER);
+        Assertion.asserts(child.getResultType().getFieldTypeName() == FieldTypeName.ARRAY,
+                "[] only applies to array field");
+        Assertion.asserts(ordinal.getResultType().getFieldTypeName() == FieldTypeName.INTEGER,
+                "[] only applies to int ordinal");
     }
 
     @Override
@@ -45,6 +48,11 @@ public class ArrayGetItem extends Expr {
             return null;
         }
         return ((Object[]) childEval)[(int) ordinalEval];
+    }
+
+    @Override
+    public String toString() {
+        return child.toString() + "[" + ordinal.toString() + "]";
     }
 
 }

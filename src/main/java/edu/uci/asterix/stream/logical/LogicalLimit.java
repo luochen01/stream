@@ -19,4 +19,18 @@ public class LogicalLimit extends UnaryLogicalPlan {
         return child.getSchema();
     }
 
+    @Override
+    public String getName() {
+        return "LIMIT";
+    }
+
+    @Override
+    protected void printContent(StringBuilder sb) {
+        sb.append(limit);
+        sb.append(",");
+        sb.append("offset:");
+        sb.append(offset);
+
+    }
+
 }

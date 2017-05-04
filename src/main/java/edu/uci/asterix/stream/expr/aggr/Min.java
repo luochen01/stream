@@ -7,8 +7,9 @@ import edu.uci.asterix.stream.utils.Assertion;
 public class Min extends AggregateExpr {
 
     public Min(Expr child) {
-        super(child);
-        Assertion.asserts(child.getResultType().getFieldTypeName().isNumerical());
+        super("MIN", child);
+        Assertion.asserts(child.getResultType().getFieldTypeName().isNumerical(),
+                "MIN only applies to numerical field");
     }
 
     @Override

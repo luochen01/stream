@@ -3,10 +3,10 @@ package edu.uci.asterix.stream.expr.pred;
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Expr;
 
-public class EqualTo extends BinaryRelationExpr {
+public class EqualTo extends BinaryTermExpr {
 
     public EqualTo(Expr left, Expr right) {
-        super(left, right);
+        super("=", left, right);
     }
 
     @Override

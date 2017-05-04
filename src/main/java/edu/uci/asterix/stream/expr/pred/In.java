@@ -5,13 +5,15 @@ import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.field.FieldTypeName;
 import edu.uci.asterix.stream.utils.Assertion;
 
-public class In extends BinaryRelationExpr {
+public class In extends BinaryTermExpr {
 
     public In(Expr left, Expr right) {
-        super(left, right);
+        super("IN", left, right);
 
-        Assertion.asserts(right.getResultType().getFieldTypeName() == FieldTypeName.ARRAY);
-        Assertion.asserts(left.getResultType().equals(right.getResultType().getElementType()));
+        Assertion.asserts(right.getResultType().getFieldTypeName() == FieldTypeName.ARRAY,
+                "RHS of IN must be array field");
+        Assertion.asserts(left.getResultType().equals(right.getResultType().getElementType()),
+                "LHS and RHS of IN must have same data type");
     }
 
     @Override

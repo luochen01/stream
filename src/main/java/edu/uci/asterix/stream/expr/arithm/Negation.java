@@ -8,7 +8,7 @@ import edu.uci.asterix.stream.field.FieldTypeName;
 public class Negation extends UnaryArithmeticExpr {
 
     public Negation(Expr child) {
-        super(child);
+        super("-", child);
     }
 
     @Override

@@ -40,7 +40,12 @@ public abstract class AbstractFieldType implements FieldType {
     }
 
     @Override
-    public int getFieldIndex(Field field) {
+    public int getFieldIndex(String field) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Field getField(String field) {
         throw new UnsupportedOperationException();
     }
 

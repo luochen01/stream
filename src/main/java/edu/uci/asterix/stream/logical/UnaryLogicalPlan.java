@@ -8,4 +8,9 @@ public abstract class UnaryLogicalPlan extends LogicalPlan {
         this.child = child;
     }
 
+    @Override
+    public LogicalPlan[] children() {
+        return new LogicalPlan[] { child };
+    }
+
 }

@@ -7,7 +7,7 @@ import edu.uci.asterix.stream.field.FieldTypeName;
 public class Divide extends BinaryArithmeticExpr {
 
     public Divide(Expr left, Expr right) {
-        super(left, right);
+        super("/", left, right);
     }
 
     @Override

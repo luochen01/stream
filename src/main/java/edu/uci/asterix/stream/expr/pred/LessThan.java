@@ -4,10 +4,10 @@ import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.field.FieldTypeName;
 
-public class LessThan extends BinaryRelationExpr {
+public class LessThan extends ComparisonExpr {
 
     public LessThan(Expr left, Expr right) {
-        super(left, right);
+        super("<", left, right);
     }
 
     @Override

@@ -7,7 +7,7 @@ import edu.uci.asterix.stream.field.FieldTypeName;
 public class Add extends BinaryArithmeticExpr {
 
     public Add(Expr left, Expr right) {
-        super(left, right);
+        super("+", left, right);
     }
 
     @Override

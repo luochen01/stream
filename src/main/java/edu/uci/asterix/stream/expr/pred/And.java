@@ -4,8 +4,8 @@ import edu.uci.asterix.stream.execution.Tuple;
 
 public class And extends BinaryPredicateExpr {
 
-    public And(RelationExpr left, RelationExpr right) {
-        super(left, right);
+    public And(TermExpr left, TermExpr right) {
+        super("AND", left, right);
     }
 
     @Override

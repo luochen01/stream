@@ -15,24 +15,26 @@ public class StructGetField extends Expr {
 
     protected final int fieldIndex;
 
-    public StructGetField(Expr child, Field field) {
+    public StructGetField(Expr child, String field) {
+        super(".");
         this.child = child;
-        this.field = field;
-
-        Assertion.asserts(child.getResultType().getFieldTypeName() == FieldTypeName.STRUCT);
+        Assertion.asserts(child.getResultType().getFieldTypeName() == FieldTypeName.STRUCT,
+                child + " is not a struct field");
 
         this.fieldIndex = child.getResultType().getFieldIndex(field);
-        Assertion.asserts(fieldIndex >= 0);
+        Assertion.asserts(fieldIndex >= 0, child + " has no field named " + field);
+
+        this.field = child.getResultType().getFields().get(fieldIndex);
     }
 
     @Override
     public Expr[] operands() {
-        return null;
+        return new Expr[] { child };
     }
 
     @Override
     public FieldType getResultType() {
-        return null;
+        return field.getFieldType();
     }
 
     @Override
@@ -42,6 +44,38 @@ public class StructGetField extends Expr {
             return null;
         }
         return ((Tuple) childEval).get(fieldIndex);
+    }
+
+    @Override
+    public Field toField() {
+        return field;
+    }
+
+    @Override
+    public String toString() {
+        return child + "." + field;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        StructGetField other = (StructGetField) obj;
+        if (child == null) {
+            if (other.child != null)
+                return false;
+        } else if (!child.equals(other.child))
+            return false;
+        if (field == null) {
+            if (other.field != null)
+                return false;
+        } else if (!field.equals(other.field))
+            return false;
+        return true;
     }
 
 }

@@ -6,4 +6,29 @@ public abstract class LogicalPlan {
 
     public abstract StructType getSchema();
 
+    public abstract String getName();
+
+    public abstract LogicalPlan[] children();
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        print(sb, 0);
+        return sb.toString();
+    }
+
+    protected void print(StringBuilder sb, int level) {
+        for (int i = 0; i < level; i++) {
+            sb.append("  ");
+        }
+        sb.append(getName());
+        sb.append(":");
+        printContent(sb);
+        sb.append("\n");
+        for (LogicalPlan child : children()) {
+            child.print(sb, level + 1);
+        }
+    }
+
+    protected abstract void printContent(StringBuilder sb);
+
 }

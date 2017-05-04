@@ -3,10 +3,10 @@ package edu.uci.asterix.stream.expr.pred;
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Expr;
 
-public class NotNull extends UnaryRelationExpr {
+public class NotNull extends UnaryTermExpr {
 
     public NotNull(Expr child) {
-        super(child);
+        super("NOT NULL", child);
     }
 
     @Override

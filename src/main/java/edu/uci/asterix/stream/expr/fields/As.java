@@ -11,7 +11,7 @@ public class As extends UnaryExpr {
     protected final String name;
 
     public As(Expr child, String name) {
-        super(child);
+        super("AS", child);
         this.name = name;
     }
 
@@ -20,8 +20,14 @@ public class As extends UnaryExpr {
         return child.getResultType();
     }
 
-    public Field getField() {
+    @Override
+    public Field toField() {
         return new Field(name, getResultType());
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
     @Override

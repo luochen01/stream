@@ -1,14 +1,14 @@
 package edu.uci.asterix.stream.execution.operators;
 
-import edu.uci.asterix.stream.catalog.Table;
+import edu.uci.asterix.stream.catalog.TableImpl;
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.field.StructType;
 
 public class TableScanOperator extends LeafOperator {
 
-    private final Table table;
+    private final TableImpl table;
 
-    public TableScanOperator(Table table) {
+    public TableScanOperator(TableImpl table) {
         this.table = table;
 
     }

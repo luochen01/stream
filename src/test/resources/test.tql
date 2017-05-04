@@ -1,0 +1,19 @@
+DEFINE SensorCollection  sensor_collection1, sensor_collection2;
+
+DEFINE ObservationStream  observation_stream1, observation_stream2;
+
+sensor_collection1 =
+SELECT *
+FROM Sensor, Infrastructure
+WHERE Sensor.location IN Infrastructure.region.geometry AND Infrastructure.region.floor=2;
+
+sensor_collection2 =
+SELECT *
+FROM sensor_collection1 sen
+WHERE sen.type.name = "WiFi AP";
+
+observation_stream1 = SENSORS_TO_OBSERVATION_STREAM(sensor_collection2);
+
+
+SELECT count(*)
+FROM observation_stream2 obs2 RANGE '1 minutes' SLIDE '1 minutes';

@@ -7,7 +7,7 @@ import edu.uci.asterix.stream.field.FieldTypeName;
 public class Minus extends BinaryArithmeticExpr {
 
     public Minus(Expr left, Expr right) {
-        super(left, right);
+        super("-", left, right);
     }
 
     @Override

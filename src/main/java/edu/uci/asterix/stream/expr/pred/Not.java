@@ -4,8 +4,8 @@ import edu.uci.asterix.stream.execution.Tuple;
 
 public class Not extends UnaryPredicateExpr {
 
-    public Not(RelationExpr child) {
-        super(child);
+    public Not(TermExpr child) {
+        super("NOT", child);
     }
 
     @Override
