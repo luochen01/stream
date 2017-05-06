@@ -1,6 +1,6 @@
 package edu.uci.asterix.stream.logical;
 
-import edu.uci.asterix.stream.expr.pred.LogicExpr;
+import edu.uci.asterix.stream.expr.logic.LogicExpr;
 import edu.uci.asterix.stream.field.StructType;
 
 public class LogicalFilter extends UnaryLogicalPlan {

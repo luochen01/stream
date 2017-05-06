@@ -15,4 +15,12 @@ public abstract class BinaryLogicalPlan extends LogicalPlan {
         return new LogicalPlan[] { left, right };
     }
 
+    public LogicalPlan getLeft() {
+        return left;
+    }
+
+    public LogicalPlan getRight() {
+        return right;
+    }
+
 }

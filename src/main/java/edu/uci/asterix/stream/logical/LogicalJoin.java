@@ -3,7 +3,7 @@ package edu.uci.asterix.stream.logical;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.uci.asterix.stream.expr.pred.LogicExpr;
+import edu.uci.asterix.stream.expr.logic.LogicExpr;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.StructType;
 
@@ -13,7 +13,9 @@ public class LogicalJoin extends BinaryLogicalPlan {
 
     private StructType schema;
 
-    public LogicalJoin(LogicalPlan left, LogicalPlan right, LogicExpr condition) {
+    private boolean equiJoin;
+
+    public LogicalJoin(LogicalPlan left, LogicalPlan right, LogicExpr condition, boolean equiJoin) {
         super(left, right);
         this.condition = condition;
 
@@ -37,6 +39,10 @@ public class LogicalJoin extends BinaryLogicalPlan {
     protected void printContent(StringBuilder sb) {
         sb.append(condition);
 
+    }
+
+    public boolean equiJoin() {
+        return equiJoin;
     }
 
 }

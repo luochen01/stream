@@ -1,4 +1,4 @@
-package edu.uci.asterix.stream.expr.pred;
+package edu.uci.asterix.stream.expr.logic;
 
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.field.FieldType;

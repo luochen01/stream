@@ -16,7 +16,7 @@ public abstract class UnaryArithmeticExpr extends ArithmeticExpr {
     }
 
     @Override
-    public Expr[] operands() {
+    public Expr[] children() {
         return new Expr[] { child };
     }
 

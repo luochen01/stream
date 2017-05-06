@@ -1,10 +1,10 @@
-package edu.uci.asterix.stream.expr.pred;
+package edu.uci.asterix.stream.expr.logic;
 
 import edu.uci.asterix.stream.execution.Tuple;
 
-public class Or extends BinaryPredicateExpr {
+public class Or extends BinaryLogicExpr {
 
-    public Or(TermExpr left, TermExpr right) {
+    public Or(LogicExpr left, LogicExpr right) {
         super("OR", left, right);
     }
 

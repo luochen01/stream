@@ -1,14 +1,14 @@
-package edu.uci.asterix.stream.expr.pred;
+package edu.uci.asterix.stream.expr.logic;
 
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.field.FieldTypeName;
 import edu.uci.asterix.stream.utils.Assertion;
 
-public class In extends BinaryTermExpr {
+public class NotIn extends BinaryPredicateExpr {
 
-    public In(Expr left, Expr right) {
-        super("IN", left, right);
+    public NotIn(Expr left, Expr right) {
+        super("NOT IN", left, right);
 
         Assertion.asserts(right.getResultType().getFieldTypeName() == FieldTypeName.ARRAY,
                 "RHS of IN must be array field");
@@ -29,10 +29,15 @@ public class In extends BinaryTermExpr {
         Object[] rightArray = (Object[]) rightEval;
         for (Object rightValue : rightArray) {
             if (leftEval.equals(rightValue)) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
+    }
+
+    @Override
+    public LogicExpr dual() {
+        return new In(left, right);
     }
 
 }

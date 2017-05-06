@@ -28,7 +28,7 @@ public class StructGetField extends Expr {
     }
 
     @Override
-    public Expr[] operands() {
+    public Expr[] children() {
         return new Expr[] { child };
     }
 

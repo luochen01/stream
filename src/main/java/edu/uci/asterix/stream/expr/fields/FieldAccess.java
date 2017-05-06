@@ -4,6 +4,7 @@ import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.LeafExpr;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.FieldType;
+import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.utils.Assertion;
 
 public class FieldAccess extends LeafExpr {
@@ -12,13 +13,16 @@ public class FieldAccess extends LeafExpr {
 
     private final int fieldIndex;
 
-    public FieldAccess(Field field, int fieldIndex) {
+    public FieldAccess(Field field, StructType schema) {
         super(field.getFieldName());
         this.field = field;
-        this.fieldIndex = fieldIndex;
         if (this.field != Field.ALL_FIELDS) {
-            Assertion.asserts(fieldIndex >= 0);
+            this.fieldIndex = schema.getFieldIndex(field.getFieldName());
+            Assertion.asserts(this.fieldIndex >= 0);
+        } else {
+            this.fieldIndex = -1;
         }
+
     }
 
     @Override

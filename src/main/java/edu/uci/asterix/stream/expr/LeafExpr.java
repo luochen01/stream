@@ -7,7 +7,7 @@ public abstract class LeafExpr extends Expr {
     }
 
     @Override
-    public Expr[] operands() {
+    public Expr[] children() {
         return new Expr[0];
     }
 }

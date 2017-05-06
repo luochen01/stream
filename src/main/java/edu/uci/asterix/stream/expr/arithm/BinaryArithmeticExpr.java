@@ -20,7 +20,7 @@ public abstract class BinaryArithmeticExpr extends ArithmeticExpr {
     }
 
     @Override
-    public Expr[] operands() {
+    public Expr[] children() {
         return new Expr[] { left, right };
     }
 

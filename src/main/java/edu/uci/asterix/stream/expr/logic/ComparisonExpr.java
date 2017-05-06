@@ -1,9 +1,9 @@
-package edu.uci.asterix.stream.expr.pred;
+package edu.uci.asterix.stream.expr.logic;
 
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.utils.Assertion;
 
-public abstract class ComparisonExpr extends BinaryTermExpr {
+public abstract class ComparisonExpr extends BinaryPredicateExpr {
 
     public ComparisonExpr(String symbol, Expr left, Expr right) {
         super(symbol, left, right);
@@ -12,5 +12,4 @@ public abstract class ComparisonExpr extends BinaryTermExpr {
         Assertion.asserts(right.getResultType().getFieldTypeName().isNumerical(),
                 "Numerical comparator only applies to numerical fields");
     }
-
 }

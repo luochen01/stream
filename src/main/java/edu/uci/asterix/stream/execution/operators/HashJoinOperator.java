@@ -1,7 +1,7 @@
 package edu.uci.asterix.stream.execution.operators;
 
 import edu.uci.asterix.stream.execution.Tuple;
-import edu.uci.asterix.stream.expr.pred.EqualTo;
+import edu.uci.asterix.stream.expr.logic.EqualTo;
 import edu.uci.asterix.stream.field.StructType;
 
 public class HashJoinOperator extends BinaryOperator {

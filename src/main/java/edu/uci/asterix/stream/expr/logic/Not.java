@@ -1,10 +1,10 @@
-package edu.uci.asterix.stream.expr.pred;
+package edu.uci.asterix.stream.expr.logic;
 
 import edu.uci.asterix.stream.execution.Tuple;
 
-public class Not extends UnaryPredicateExpr {
+public class Not extends UnaryLogicExpr {
 
-    public Not(TermExpr child) {
+    public Not(LogicExpr child) {
         super("NOT", child);
     }
 

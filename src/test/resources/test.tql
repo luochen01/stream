@@ -10,10 +10,10 @@ WHERE Sensor.location IN Infrastructure.region.geometry AND Infrastructure.regio
 sensor_collection2 =
 SELECT *
 FROM sensor_collection1 sen
-WHERE sen.type.name = "WiFi AP";
+WHERE sen.`Sensor.type`.name = "WiFi AP";
 
 observation_stream1 = SENSORS_TO_OBSERVATION_STREAM(sensor_collection2);
 
 
 SELECT count(*)
-FROM observation_stream2 obs2 RANGE '1 minutes' SLIDE '1 minutes';
+FROM observation_stream1 obs1 RANGE '1 minutes' SLIDE '1 minutes';

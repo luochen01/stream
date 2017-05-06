@@ -1,5 +1,8 @@
 package edu.uci.asterix.stream.expr;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.FieldType;
@@ -16,7 +19,14 @@ public abstract class Expr {
         this.symbol = symbol;
     }
 
-    public abstract Expr[] operands();
+    public boolean fastEqual(Expr another) {
+        if (another == null) {
+            return false;
+        }
+        return this.id == another.id;
+    }
+
+    public abstract Expr[] children();
 
     public abstract FieldType getResultType();
 
@@ -31,6 +41,21 @@ public abstract class Expr {
     @Override
     public final int hashCode() {
         throw new UnsupportedOperationException();
+    }
+
+    public List<Expr> collect(Class<? extends Expr> clazz) {
+        List<Expr> list = new ArrayList<>();
+        collectImpl(clazz, list);
+        return list;
+    }
+
+    private void collectImpl(Class<? extends Expr> clazz, List<Expr> list) {
+        for (Expr child : children()) {
+            child.collectImpl(clazz, list);
+        }
+        if (clazz.isInstance(this)) {
+            list.add(this);
+        }
     }
 
     @Override

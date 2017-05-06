@@ -39,18 +39,21 @@ import edu.uci.asterix.stream.expr.fields.FieldAccess;
 import edu.uci.asterix.stream.expr.fields.FunctionCall;
 import edu.uci.asterix.stream.expr.fields.Literal;
 import edu.uci.asterix.stream.expr.fields.StructGetField;
-import edu.uci.asterix.stream.expr.pred.And;
-import edu.uci.asterix.stream.expr.pred.EqualTo;
-import edu.uci.asterix.stream.expr.pred.GreaterThan;
-import edu.uci.asterix.stream.expr.pred.GreaterThanOrEqualTo;
-import edu.uci.asterix.stream.expr.pred.In;
-import edu.uci.asterix.stream.expr.pred.LessThan;
-import edu.uci.asterix.stream.expr.pred.LessThanOrEqualTo;
-import edu.uci.asterix.stream.expr.pred.LogicExpr;
-import edu.uci.asterix.stream.expr.pred.Not;
-import edu.uci.asterix.stream.expr.pred.NotEqualTo;
-import edu.uci.asterix.stream.expr.pred.NotNull;
-import edu.uci.asterix.stream.expr.pred.TermExpr;
+import edu.uci.asterix.stream.expr.logic.And;
+import edu.uci.asterix.stream.expr.logic.EqualTo;
+import edu.uci.asterix.stream.expr.logic.False;
+import edu.uci.asterix.stream.expr.logic.GreaterThan;
+import edu.uci.asterix.stream.expr.logic.GreaterThanOrEqualTo;
+import edu.uci.asterix.stream.expr.logic.In;
+import edu.uci.asterix.stream.expr.logic.IsNull;
+import edu.uci.asterix.stream.expr.logic.LessThan;
+import edu.uci.asterix.stream.expr.logic.LessThanOrEqualTo;
+import edu.uci.asterix.stream.expr.logic.LogicExpr;
+import edu.uci.asterix.stream.expr.logic.Not;
+import edu.uci.asterix.stream.expr.logic.NotEqualTo;
+import edu.uci.asterix.stream.expr.logic.NotNull;
+import edu.uci.asterix.stream.expr.logic.PredicateExpr;
+import edu.uci.asterix.stream.expr.logic.True;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.FieldTypeName;
 import edu.uci.asterix.stream.field.StructType;
@@ -71,6 +74,7 @@ import edu.uci.asterix.stream.parser.gen.TQLParser.AndContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.Any_nameContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.ArithmeticContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.Array_get_itemContext;
+import edu.uci.asterix.stream.parser.gen.TQLParser.BooleanContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.ComparisonContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.CountContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.Field_accessContext;
@@ -119,8 +123,17 @@ public class TQLParser {
     }
 
     private String getStringContent(String value) {
-        Assertion.asserts(value.length() >= 2);
-        return value.substring(1, value.length() - 1);
+        if (value.isEmpty()) {
+            return value;
+        }
+        char begin = value.charAt(0);
+        if (begin == '\'' || begin == '"' || begin == '`') {
+            char last = value.charAt(value.length() - 1);
+            Assertion.asserts(begin == last);
+            return value.substring(1, value.length() - 1);
+        } else {
+            return value;
+        }
     }
 
     private class ThrowingErrorListener extends BaseErrorListener {
@@ -216,6 +229,9 @@ public class TQLParser {
             if (ctx.group_by() != null) {
                 currentPlan = ctx.group_by().accept(this);
             }
+            if (ctx.select() != null) {
+                currentPlan = ctx.select().accept(this);
+            }
             if (ctx.order_by() != null) {
                 currentPlan = ctx.order_by().accept(this);
             }
@@ -228,7 +244,7 @@ public class TQLParser {
         @Override
         public LogicalPlan visitFrom_stream(From_streamContext ctx) {
             LogicalPlan from = ctx.stream_window().stream().map(tableCtx -> tableCtx.accept(this))
-                    .reduce((left, right) -> new LogicalJoin(left, right, null)).get();
+                    .reduce((left, right) -> new LogicalJoin(left, right, null, false)).get();
             return from;
         }
 
@@ -245,6 +261,9 @@ public class TQLParser {
             if (stream == null) {
                 throw new ParsingException("Unknown ObservationStream " + streamName);
             }
+            if (stream.getSensorCollection() == null) {
+                throw new ParsingException("Undefined ObservationStream " + streamName);
+            }
 
             int range = ctx.time_interval(0).accept(new TimeIntervalVisitor());
             int slide = ctx.time_interval(1).accept(new TimeIntervalVisitor());
@@ -256,7 +275,7 @@ public class TQLParser {
         @Override
         public LogicalPlan visitFrom(FromContext ctx) {
             LogicalPlan from = ctx.table().stream().map(tableCtx -> tableCtx.accept(this))
-                    .reduce((left, right) -> new LogicalJoin(left, right, null)).get();
+                    .reduce((left, right) -> new LogicalJoin(left, right, null, false)).get();
             return from;
         }
 
@@ -306,7 +325,7 @@ public class TQLParser {
             List<Expr> exprs = new ArrayList<>();
             Set<String> names = new HashSet<>();
             if (ctx.column_list().result_column().isEmpty()) {
-                exprs.add(new FieldAccess(Field.ALL_FIELDS, -1));
+                exprs.add(new FieldAccess(Field.ALL_FIELDS, null));
             } else {
                 ctx.column_list().result_column().forEach(columnCtx -> {
                     Expr expr = columnCtx.expr().accept(new ExprVisitor(currentPlan.getSchema(), accessedTables));
@@ -380,22 +399,33 @@ public class TQLParser {
         }
 
         @Override
+        public Expr visitBoolean(BooleanContext ctx) {
+            String text = ctx.getText().toLowerCase();
+            boolean value = Boolean.valueOf(text);
+            if (value) {
+                return True.INSTANCE;
+            } else {
+                return False.INSTANCE;
+            }
+        }
+
+        @Override
         public Expr visitAnd(AndContext ctx) {
-            TermExpr left = (TermExpr) ctx.logic_expr(0).accept(this);
-            TermExpr right = (TermExpr) ctx.logic_expr(1).accept(this);
+            PredicateExpr left = (PredicateExpr) ctx.logic_expr(0).accept(this);
+            PredicateExpr right = (PredicateExpr) ctx.logic_expr(1).accept(this);
             return new And(left, right);
         }
 
         @Override
         public Expr visitOr(OrContext ctx) {
-            TermExpr left = (TermExpr) ctx.logic_expr(0).accept(this);
-            TermExpr right = (TermExpr) ctx.logic_expr(1).accept(this);
+            PredicateExpr left = (PredicateExpr) ctx.logic_expr(0).accept(this);
+            PredicateExpr right = (PredicateExpr) ctx.logic_expr(1).accept(this);
             return new And(left, right);
         }
 
         @Override
         public Expr visitNot(NotContext ctx) {
-            TermExpr child = (TermExpr) ctx.logic_expr().accept(this);
+            PredicateExpr child = (PredicateExpr) ctx.logic_expr().accept(this);
             return new Not(child);
         }
 
@@ -463,7 +493,7 @@ public class TQLParser {
         @Override
         public Expr visitIs_null(Is_nullContext ctx) {
             Expr child = ctx.expr().accept(this);
-            return new Not(new NotNull(child));
+            return new IsNull(child);
         }
 
         @Override
@@ -480,9 +510,8 @@ public class TQLParser {
                 return new Literal(Integer.valueOf(ctx.INT_LITERAL().getText()), FieldTypeName.INTEGER);
             } else if (ctx.REAL_LITERAL() != null) {
                 return new Literal(Integer.valueOf(ctx.REAL_LITERAL().getText()), FieldTypeName.REAL);
-            } else {
-                return new Literal(Boolean.valueOf(ctx.BOOLEAN_LITERAL().getText()), FieldTypeName.BOOLEAN);
             }
+            throw new ParsingException("Unknown Literal: " + ctx.getText());
         }
 
         @Override
@@ -497,27 +526,27 @@ public class TQLParser {
             List<Any_nameContext> names = ctx.any_name();
             int i = 0;
             Expr result = null;
-            String firstName = names.get(i++).getText();
+            String firstName = getStringContent(names.get(i++).getText());
             Table table = accessedTables.get(firstName);
             if (table != null) {
                 if (names.size() == 1) {
                     throw new ParsingException("Invalid field access expression " + firstName);
                 }
-                String secondName = names.get(i++).getText();
-                Field field = table.getField(secondName);
+                String secondName = getStringContent(names.get(i++).getText());
+                Field field = schema.getField(firstName + "." + secondName);
                 if (field == null) {
                     throw new ParsingException(secondName + " is not a field of " + firstName);
                 }
-                result = new FieldAccess(field.withTableAlias(firstName), table.getSchema().getFieldIndex(secondName));
+                result = new FieldAccess(field, schema);
             } else {
                 Field field = schema.getField(firstName);
                 if (field == null) {
                     throw new ParsingException("Unknown field " + firstName);
                 }
-                result = new FieldAccess(field, schema.getFieldIndex(firstName));
+                result = new FieldAccess(field, schema);
             }
             for (; i < names.size(); i++) {
-                String fieldName = names.get(i).getText();
+                String fieldName = getStringContent(names.get(i).getText());
                 result = new StructGetField(result, fieldName);
             }
             return result;
@@ -525,7 +554,7 @@ public class TQLParser {
 
         @Override
         public Expr visitCount(CountContext ctx) {
-            return new Count(new FieldAccess(Field.ALL_FIELDS, -1));
+            return new Count(new FieldAccess(Field.ALL_FIELDS, null));
         }
 
         @Override
@@ -578,6 +607,7 @@ public class TQLParser {
         public Expr visitLogic_parentheses(Logic_parenthesesContext ctx) {
             return ctx.logic_expr().accept(this);
         }
+
     }
 
     private class TimeIntervalVisitor extends TQLBaseVisitor<Integer> {

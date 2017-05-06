@@ -1,12 +1,12 @@
-package edu.uci.asterix.stream.expr.pred;
+package edu.uci.asterix.stream.expr.logic;
 
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Expr;
 
-public class EqualTo extends BinaryTermExpr {
+public class NotEqualTo extends BinaryPredicateExpr {
 
-    public EqualTo(Expr left, Expr right) {
-        super("=", left, right);
+    public NotEqualTo(Expr left, Expr right) {
+        super("!=", left, right);
     }
 
     @Override
@@ -16,7 +16,12 @@ public class EqualTo extends BinaryTermExpr {
         if (leftEval == null || rightEval == null) {
             return null;
         }
-        return leftEval.equals(rightEval);
+        return !leftEval.equals(rightEval);
+    }
+
+    @Override
+    public PredicateExpr dual() {
+        return new EqualTo(left, right);
     }
 
 }

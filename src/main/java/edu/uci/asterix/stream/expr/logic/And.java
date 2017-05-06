@@ -1,10 +1,13 @@
-package edu.uci.asterix.stream.expr.pred;
+package edu.uci.asterix.stream.expr.logic;
+
+import java.util.List;
+import java.util.Optional;
 
 import edu.uci.asterix.stream.execution.Tuple;
 
-public class And extends BinaryPredicateExpr {
+public class And extends BinaryLogicExpr {
 
-    public And(TermExpr left, TermExpr right) {
+    public And(LogicExpr left, LogicExpr right) {
         super("AND", left, right);
     }
 
@@ -18,6 +21,10 @@ public class And extends BinaryPredicateExpr {
             return false;
         }
         return right.eval(input);
+    }
+
+    public static LogicExpr create(List<LogicExpr> children) {
+        return children.stream().reduce((left, right) -> new And(left, right)).orElse(True.INSTANCE);
     }
 
 }

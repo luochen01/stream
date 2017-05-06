@@ -102,8 +102,7 @@ function_name
 
 any_name
 	: IDENTIFIER
-	| STRING_LITERAL
-	| '(' any_name ')' ;
+	| STRING_LITERAL;
 
 result_column
 	: expr ( AS? column_alias )? ;
@@ -130,7 +129,8 @@ term_expr
 	: expr ('<' | '<=' | '>' | '>=' | '=' | '!=') expr #comparison
 	| expr NOT? IN expr #in
 	| expr NOT_NULL #not_null
-	| expr IS_NULL #is_null ;
+	| expr IS_NULL #is_null 
+	| BOOLEAN_LITERAL #boolean;
 
 	
 logic_expr
@@ -144,8 +144,7 @@ literal_value
 	: 
 	INT_LITERAL
 	| REAL_LITERAL
-	| STRING_LITERAL
-	| BOOLEAN_LITERAL ;
+	| STRING_LITERAL;
 
 agg_func:
   AVG| MIN| MAX| SUM;
@@ -251,13 +250,11 @@ COUNT:
   C O U N T;
 
 IDENTIFIER
-	:
-	| '`' (~'`' | '``')* '`'
-	| '[' ~']'* ']'
+	:'`' (~'`' | '``')* '`'
 	| [a-zA-Z_] [a-zA-Z_0-9]* ;
 
 STRING_LITERAL
-	: '\"' ( ~'\'' | '\'\'' )* '\"' ;
+	: '\"' ( ~'\"')* '\"' ;
 
 BOOLEAN_LITERAL
 	: T R U E

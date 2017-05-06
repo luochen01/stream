@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.uci.asterix.stream.expr.Expr;
-import edu.uci.asterix.stream.expr.pred.LogicExpr;
+import edu.uci.asterix.stream.expr.logic.LogicExpr;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.utils.Utils;

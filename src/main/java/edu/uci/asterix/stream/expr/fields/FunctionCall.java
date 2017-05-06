@@ -30,7 +30,7 @@ public class FunctionCall extends Expr {
     }
 
     @Override
-    public Expr[] operands() {
+    public Expr[] children() {
         return arguments;
     }
 
