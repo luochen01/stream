@@ -26,4 +26,9 @@ public class Mod extends BinaryArithmeticExpr {
         return (int) leftVal % (int) rightVal;
     }
 
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new Mod(children[0], children[1]);
+    }
+
 }

@@ -35,4 +35,9 @@ public class Divide extends BinaryArithmeticExpr {
         }
     }
 
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new Divide(children[0], children[1]);
+    }
+
 }

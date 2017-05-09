@@ -1,11 +1,10 @@
-package edu.uci.asterix.stream.parser;
+package edu.uci.asterix.stream.catalog;
 
 import java.util.List;
 
-import edu.uci.asterix.stream.catalog.CatalogException;
-import edu.uci.asterix.stream.catalog.Table;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.StructType;
+import edu.uci.asterix.stream.logical.LogicalPlan;
 
 public class ObservationStream implements Table {
     private String name;
@@ -44,12 +43,16 @@ public class ObservationStream implements Table {
     @Override
     public void addField(Field field) throws CatalogException {
         throw new UnsupportedOperationException();
-
     }
 
     @Override
     public StructType getSchema() {
         return schema;
+    }
+
+    @Override
+    public LogicalPlan getLogicalPlan() {
+        return collection.getLogicalPlan();
     }
 
 }

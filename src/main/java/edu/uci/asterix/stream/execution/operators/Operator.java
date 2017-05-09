@@ -2,6 +2,7 @@ package edu.uci.asterix.stream.execution.operators;
 
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.field.StructType;
+import edu.uci.asterix.stream.logical.LogicalPlan;
 
 public interface Operator {
 
@@ -16,5 +17,15 @@ public interface Operator {
      * @return
      */
     public StructType getSchema();
+
+    public LogicalPlan getLogicalPlan();
+
+    public Operator[] children();
+
+    public String getName();
+
+    public String toString();
+
+    public void print(StringBuilder sb, int level);
 
 }

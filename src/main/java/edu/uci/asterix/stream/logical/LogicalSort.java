@@ -18,6 +18,14 @@ public class LogicalSort extends UnaryLogicalPlan {
         this.order = order;
     }
 
+    public List<Expr> getSortFields() {
+        return sortFields;
+    }
+
+    public SortOrder getOrder() {
+        return order;
+    }
+
     @Override
     public StructType getSchema() {
         return child.getSchema();
@@ -25,11 +33,11 @@ public class LogicalSort extends UnaryLogicalPlan {
 
     @Override
     public String getName() {
-        return "SORT";
+        return "LOGICAL SORT";
     }
 
     @Override
-    protected void printContent(StringBuilder sb) {
+    protected void printContent(StringBuilder sb, int level) {
         sb.append(Utils.format(sortFields, ","));
         sb.append("  ");
         sb.append(order);

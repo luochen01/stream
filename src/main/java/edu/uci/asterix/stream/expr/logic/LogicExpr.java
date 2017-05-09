@@ -5,14 +5,10 @@ import edu.uci.asterix.stream.field.FieldType;
 import edu.uci.asterix.stream.field.FieldTypeName;
 import edu.uci.asterix.stream.field.PrimitiveType;
 
-public abstract class LogicExpr extends Expr {
-
-    public LogicExpr(String symbol) {
-        super(symbol);
-    }
+public interface LogicExpr extends Expr {
 
     @Override
-    public FieldType getResultType() {
+    public default FieldType getResultType() {
         return PrimitiveType.get(FieldTypeName.BOOLEAN);
     }
 

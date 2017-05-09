@@ -21,11 +21,19 @@ public class LogicalLimit extends UnaryLogicalPlan {
 
     @Override
     public String getName() {
-        return "LIMIT";
+        return "LOGICAL LIMIT";
+    }
+
+    public int getLimit() {
+        return limit;
+    }
+
+    public int getOffset() {
+        return offset;
     }
 
     @Override
-    protected void printContent(StringBuilder sb) {
+    protected void printContent(StringBuilder sb, int level) {
         sb.append(limit);
         sb.append(",");
         sb.append("offset:");

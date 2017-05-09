@@ -13,4 +13,8 @@ public abstract class UnaryLogicalPlan extends LogicalPlan {
         return new LogicalPlan[] { child };
     }
 
+    public LogicalPlan getChild() {
+        return child;
+    }
+
 }

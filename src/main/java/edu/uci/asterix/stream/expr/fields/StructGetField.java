@@ -2,22 +2,20 @@ package edu.uci.asterix.stream.expr.fields;
 
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Expr;
+import edu.uci.asterix.stream.expr.UnaryExpr;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.FieldType;
 import edu.uci.asterix.stream.field.FieldTypeName;
 import edu.uci.asterix.stream.utils.Assertion;
 
-public class StructGetField extends Expr {
-
-    protected final Expr child;
+public class StructGetField extends UnaryExpr<Expr> {
 
     protected final Field field;
 
     protected final int fieldIndex;
 
     public StructGetField(Expr child, String field) {
-        super(".");
-        this.child = child;
+        super(".", child);
         Assertion.asserts(child.getResultType().getFieldTypeName() == FieldTypeName.STRUCT,
                 child + " is not a struct field");
 
@@ -76,6 +74,11 @@ public class StructGetField extends Expr {
         } else if (!field.equals(other.field))
             return false;
         return true;
+    }
+
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new StructGetField(children[0], field.getFieldName());
     }
 
 }

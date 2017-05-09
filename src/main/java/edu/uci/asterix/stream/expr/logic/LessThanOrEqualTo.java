@@ -38,4 +38,10 @@ public class LessThanOrEqualTo extends ComparisonExpr {
     public PredicateExpr dual() {
         return new GreaterThan(left, right);
     }
+
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new LessThanOrEqualTo(children[0], children[1]);
+    }
+
 }

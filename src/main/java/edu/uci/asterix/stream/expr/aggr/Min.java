@@ -17,4 +17,9 @@ public class Min extends AggregateExpr {
         return child.getResultType();
     }
 
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new Min(children[0]);
+    }
+
 }

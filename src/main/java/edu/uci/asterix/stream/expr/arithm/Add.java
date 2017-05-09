@@ -35,4 +35,9 @@ public class Add extends BinaryArithmeticExpr {
         }
     }
 
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new Add(children[0], children[1]);
+    }
+
 }

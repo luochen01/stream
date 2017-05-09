@@ -18,7 +18,10 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import edu.uci.asterix.stream.catalog.Catalog;
+import edu.uci.asterix.stream.catalog.ObservationStream;
+import edu.uci.asterix.stream.catalog.SensorCollection;
 import edu.uci.asterix.stream.catalog.Table;
+import edu.uci.asterix.stream.catalog.TableImpl;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.expr.SortOrder;
 import edu.uci.asterix.stream.expr.Window;
@@ -52,6 +55,7 @@ import edu.uci.asterix.stream.expr.logic.LogicExpr;
 import edu.uci.asterix.stream.expr.logic.Not;
 import edu.uci.asterix.stream.expr.logic.NotEqualTo;
 import edu.uci.asterix.stream.expr.logic.NotNull;
+import edu.uci.asterix.stream.expr.logic.Or;
 import edu.uci.asterix.stream.expr.logic.PredicateExpr;
 import edu.uci.asterix.stream.expr.logic.True;
 import edu.uci.asterix.stream.field.Field;
@@ -64,9 +68,13 @@ import edu.uci.asterix.stream.logical.LogicalJoin;
 import edu.uci.asterix.stream.logical.LogicalLimit;
 import edu.uci.asterix.stream.logical.LogicalPlan;
 import edu.uci.asterix.stream.logical.LogicalProject;
+import edu.uci.asterix.stream.logical.LogicalSensorScan;
 import edu.uci.asterix.stream.logical.LogicalSort;
 import edu.uci.asterix.stream.logical.LogicalStreamScan;
 import edu.uci.asterix.stream.logical.LogicalTableScan;
+import edu.uci.asterix.stream.logical.analyzer.CNFNormalizer;
+import edu.uci.asterix.stream.logical.analyzer.IdentifyAggregateExprs;
+import edu.uci.asterix.stream.logical.analyzer.IdentifyJoinConditions;
 import edu.uci.asterix.stream.parser.gen.TQLBaseVisitor;
 import edu.uci.asterix.stream.parser.gen.TQLLexer;
 import edu.uci.asterix.stream.parser.gen.TQLParser.AggrContext;
@@ -213,6 +221,9 @@ public class TQLParser {
 
             if (ctx.where() != null) {
                 currentPlan = ctx.where().accept(this);
+                //identify join condition
+                IdentifyJoinConditions identify = new IdentifyJoinConditions();
+                currentPlan = identify.analyze(currentPlan);
             }
             //select must not be null
             currentPlan = ctx.select().accept(this);
@@ -225,12 +236,18 @@ public class TQLParser {
             currentPlan = ctx.from_stream().accept(this);
             if (ctx.where() != null) {
                 currentPlan = ctx.where().accept(this);
+
+                IdentifyJoinConditions identify = new IdentifyJoinConditions();
+                currentPlan = identify.analyze(currentPlan);
             }
             if (ctx.group_by() != null) {
                 currentPlan = ctx.group_by().accept(this);
             }
             if (ctx.select() != null) {
                 currentPlan = ctx.select().accept(this);
+
+                IdentifyAggregateExprs identify = new IdentifyAggregateExprs();
+                currentPlan = identify.analyze(currentPlan);
             }
             if (ctx.order_by() != null) {
                 currentPlan = ctx.order_by().accept(this);
@@ -291,7 +308,7 @@ public class TQLParser {
             Table table = Catalog.INSTANCE.getTable(tableName);
             if (table != null) {
                 accessTable(table, aliasName);
-                return new LogicalTableScan(table, aliasName);
+                return new LogicalTableScan((TableImpl) table, aliasName);
             }
             SensorCollection sensorCollection = queryContext.getSensorCollection(tableName);
             if (sensorCollection != null) {
@@ -300,7 +317,7 @@ public class TQLParser {
                     throw new ParsingException("Undefined SensorCollection " + tableName);
                 }
                 accessTable(sensorCollection, aliasName);
-                return new LogicalTableScan(sensorCollection, aliasName);
+                return new LogicalSensorScan(sensorCollection, aliasName);
             }
             throw new ParsingException("Unknown Table " + tableName);
         }
@@ -314,14 +331,15 @@ public class TQLParser {
 
         @Override
         public LogicalPlan visitWhere(WhereContext ctx) {
-            Expr expr = ctx.logic_expr().accept(new ExprVisitor(currentPlan.getSchema(), accessedTables));
-            LogicalFilter filter = new LogicalFilter(currentPlan, (LogicExpr) expr);
+            LogicExpr expr = (LogicExpr) ctx.logic_expr()
+                    .accept(new ExprVisitor(currentPlan.getSchema(), accessedTables));
+            LogicExpr cnf = CNFNormalizer.INSTANCE.toCNF(expr);
+            LogicalFilter filter = new LogicalFilter(currentPlan, cnf);
             return filter;
         }
 
         @Override
         public LogicalPlan visitSelect(SelectContext ctx) {
-
             List<Expr> exprs = new ArrayList<>();
             Set<String> names = new HashSet<>();
             if (ctx.column_list().result_column().isEmpty()) {
@@ -352,12 +370,14 @@ public class TQLParser {
                 exprs.add(expr);
             });
 
-            LogicExpr havingExpr = null;
+            LogicExpr havingExpr = True.INSTANCE;
             if (ctx.having() != null) {
                 havingExpr = (LogicExpr) ctx.having().logic_expr()
                         .accept(new ExprVisitor(currentPlan.getSchema(), accessedTables));
             }
-            return new LogicalGroupby(currentPlan, exprs, null, havingExpr);
+            LogicExpr havingCNF = CNFNormalizer.INSTANCE.toCNF(havingExpr);
+
+            return new LogicalGroupby(currentPlan, exprs, null, havingCNF);
         }
 
         @Override
@@ -420,7 +440,7 @@ public class TQLParser {
         public Expr visitOr(OrContext ctx) {
             PredicateExpr left = (PredicateExpr) ctx.logic_expr(0).accept(this);
             PredicateExpr right = (PredicateExpr) ctx.logic_expr(1).accept(this);
-            return new And(left, right);
+            return new Or(left, right);
         }
 
         @Override

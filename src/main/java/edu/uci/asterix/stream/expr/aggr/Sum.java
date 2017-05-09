@@ -17,4 +17,9 @@ public class Sum extends AggregateExpr {
         return child.getResultType();
     }
 
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new Sum(children[0]);
+    }
+
 }

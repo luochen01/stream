@@ -35,4 +35,9 @@ public class Minus extends BinaryArithmeticExpr {
         }
     }
 
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new Minus(children[0], children[1]);
+    }
+
 }

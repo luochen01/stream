@@ -36,8 +36,13 @@ public class NotIn extends BinaryPredicateExpr {
     }
 
     @Override
-    public LogicExpr dual() {
+    public PredicateExpr dual() {
         return new In(left, right);
+    }
+
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new NotIn(children[0], children[1]);
     }
 
 }

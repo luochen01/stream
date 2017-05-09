@@ -24,4 +24,9 @@ public class NotEqualTo extends BinaryPredicateExpr {
         return new EqualTo(left, right);
     }
 
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new NotEqualTo(children[0], children[1]);
+    }
+
 }

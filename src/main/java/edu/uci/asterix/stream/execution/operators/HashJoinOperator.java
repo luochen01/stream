@@ -2,21 +2,27 @@ package edu.uci.asterix.stream.execution.operators;
 
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.logic.EqualTo;
-import edu.uci.asterix.stream.field.StructType;
+import edu.uci.asterix.stream.logical.LogicalJoin;
+import edu.uci.asterix.stream.utils.Assertion;
 
-public class HashJoinOperator extends BinaryOperator {
+public class HashJoinOperator extends BinaryOperator<LogicalJoin> {
 
     protected final EqualTo condition;
 
-    public HashJoinOperator(Operator left, Operator right, EqualTo condition) {
-        super(left, right);
-        this.condition = condition;
+    public HashJoinOperator(Operator left, Operator right, LogicalJoin logicalJoin) {
+        super(left, right, logicalJoin);
+        Assertion.asserts(logicalJoin.isEquiJoin());
+        this.condition = (EqualTo) logicalJoin.getJoinCondition();
     }
 
     @Override
-    public StructType getSchema() {
-        //TODO
-        return null;
+    public String getName() {
+        return "HASH JOIN";
+    }
+
+    @Override
+    protected void printContent(StringBuilder sb) {
+        sb.append(condition);
     }
 
     @Override

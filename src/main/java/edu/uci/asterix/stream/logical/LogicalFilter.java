@@ -14,7 +14,7 @@ public class LogicalFilter extends UnaryLogicalPlan {
 
     @Override
     public String getName() {
-        return "FILTER";
+        return "LOGICAL FILTER";
     }
 
     @Override
@@ -22,12 +22,12 @@ public class LogicalFilter extends UnaryLogicalPlan {
         return child.getSchema();
     }
 
-    public LogicExpr getCondition() {
+    public LogicExpr getFilterCondition() {
         return condition;
     }
 
     @Override
-    protected void printContent(StringBuilder sb) {
+    protected void printContent(StringBuilder sb, int level) {
         sb.append(condition.toString());
     }
 

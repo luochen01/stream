@@ -1,11 +1,12 @@
 package edu.uci.asterix.stream.expr.logic;
 
 import java.util.List;
-import java.util.Optional;
 
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.expr.BinaryExpr;
+import edu.uci.asterix.stream.expr.Expr;
 
-public class And extends BinaryLogicExpr {
+public class And extends BinaryExpr<LogicExpr> implements LogicExpr {
 
     public And(LogicExpr left, LogicExpr right) {
         super("AND", left, right);
@@ -25,6 +26,11 @@ public class And extends BinaryLogicExpr {
 
     public static LogicExpr create(List<LogicExpr> children) {
         return children.stream().reduce((left, right) -> new And(left, right)).orElse(True.INSTANCE);
+    }
+
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new And((LogicExpr) children[0], (LogicExpr) children[1]);
     }
 
 }

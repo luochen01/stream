@@ -7,6 +7,7 @@ import java.util.Map;
 
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.StructType;
+import edu.uci.asterix.stream.logical.LogicalPlan;
 
 public class TableImpl implements Table {
 
@@ -22,6 +23,11 @@ public class TableImpl implements Table {
 
     public String getTableName() {
         return tableName;
+    }
+
+    @Override
+    public LogicalPlan getLogicalPlan() {
+        return null;
     }
 
     public List<Field> getFields() {

@@ -16,19 +16,19 @@ public abstract class LogicalPlan {
         return sb.toString();
     }
 
-    protected void print(StringBuilder sb, int level) {
+    public void print(StringBuilder sb, int level) {
         for (int i = 0; i < level; i++) {
             sb.append("  ");
         }
         sb.append(getName());
         sb.append(":");
-        printContent(sb);
+        printContent(sb, level);
         sb.append("\n");
         for (LogicalPlan child : children()) {
             child.print(sb, level + 1);
         }
     }
 
-    protected abstract void printContent(StringBuilder sb);
+    protected abstract void printContent(StringBuilder sb, int level);
 
 }

@@ -1,10 +1,28 @@
 package edu.uci.asterix.stream.execution.operators;
 
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.field.StructType;
+import edu.uci.asterix.stream.logical.LogicalPlan;
 
-public abstract class AbstractStreamOperator implements Operator {
+public abstract class AbstractStreamOperator<T extends LogicalPlan> implements Operator {
 
     protected boolean closed = false;
+
+    protected final T logicalPlan;
+
+    public AbstractStreamOperator(T logicalPlan) {
+        this.logicalPlan = logicalPlan;
+    }
+
+    @Override
+    public StructType getSchema() {
+        return logicalPlan.getSchema();
+    }
+
+    @Override
+    public LogicalPlan getLogicalPlan() {
+        return logicalPlan;
+    }
 
     @Override
     public Tuple next() {
@@ -15,5 +33,26 @@ public abstract class AbstractStreamOperator implements Operator {
     }
 
     protected abstract Tuple nextImpl();
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        print(sb, 0);
+        return sb.toString();
+    }
+
+    public void print(StringBuilder sb, int level) {
+        for (int i = 0; i < level; i++) {
+            sb.append("  ");
+        }
+        sb.append(getName());
+        sb.append(":");
+        printContent(sb);
+        sb.append("\n");
+        for (Operator child : children()) {
+            child.print(sb, level + 1);
+        }
+    }
+
+    protected abstract void printContent(StringBuilder sb);
 
 }

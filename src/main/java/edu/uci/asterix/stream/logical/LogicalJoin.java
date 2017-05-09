@@ -9,20 +9,28 @@ import edu.uci.asterix.stream.field.StructType;
 
 public class LogicalJoin extends BinaryLogicalPlan {
 
-    private LogicExpr condition;
+    private final LogicExpr condition;
 
-    private StructType schema;
+    private final StructType schema;
 
-    private boolean equiJoin;
+    private final boolean equiJoin;
 
     public LogicalJoin(LogicalPlan left, LogicalPlan right, LogicExpr condition, boolean equiJoin) {
         super(left, right);
         this.condition = condition;
-
+        this.equiJoin = equiJoin;
         List<Field> fields = new ArrayList<>();
         fields.addAll(left.getSchema().getFields());
         fields.addAll(right.getSchema().getFields());
         schema = new StructType(fields);
+    }
+
+    public LogicExpr getJoinCondition() {
+        return condition;
+    }
+
+    public boolean isEquiJoin() {
+        return equiJoin;
     }
 
     @Override
@@ -32,17 +40,13 @@ public class LogicalJoin extends BinaryLogicalPlan {
 
     @Override
     public String getName() {
-        return "JOIN";
+        return "LOGICAL JOIN";
     }
 
     @Override
-    protected void printContent(StringBuilder sb) {
+    protected void printContent(StringBuilder sb, int level) {
         sb.append(condition);
 
-    }
-
-    public boolean equiJoin() {
-        return equiJoin;
     }
 
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.StructType;
+import edu.uci.asterix.stream.logical.LogicalPlan;
 
 public interface Table {
     public String getTableName();
@@ -15,4 +16,7 @@ public interface Table {
     public void addField(Field field) throws CatalogException;
 
     public StructType getSchema();
+
+    public LogicalPlan getLogicalPlan();
+
 }

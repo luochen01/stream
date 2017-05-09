@@ -39,4 +39,9 @@ public class GreaterThan extends ComparisonExpr {
         return new LessThanOrEqualTo(left, right);
     }
 
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new GreaterThan(children[0], children[1]);
+    }
+
 }

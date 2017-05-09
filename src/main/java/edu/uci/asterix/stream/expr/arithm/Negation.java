@@ -29,4 +29,9 @@ public class Negation extends UnaryArithmeticExpr {
         }
     }
 
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new Negation(children[0]);
+    }
+
 }

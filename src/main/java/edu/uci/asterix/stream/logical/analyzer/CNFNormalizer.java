@@ -1,7 +1,6 @@
 package edu.uci.asterix.stream.logical.analyzer;
 
 import edu.uci.asterix.stream.expr.logic.And;
-import edu.uci.asterix.stream.expr.logic.BinaryLogicExpr;
 import edu.uci.asterix.stream.expr.logic.LogicExpr;
 import edu.uci.asterix.stream.expr.logic.Not;
 import edu.uci.asterix.stream.expr.logic.Or;
@@ -9,6 +8,10 @@ import edu.uci.asterix.stream.expr.logic.PredicateExpr;
 
 public class CNFNormalizer {
     public static final CNFNormalizer INSTANCE = new CNFNormalizer();
+
+    private CNFNormalizer() {
+
+    }
 
     public LogicExpr toCNF(LogicExpr expr) {
         LogicExpr pushedNot = eliminateNot(expr);
@@ -19,15 +22,16 @@ public class CNFNormalizer {
     private LogicExpr eliminateNot(LogicExpr expr) {
         if (expr instanceof Not) {
             LogicExpr child = ((Not) expr).getChild();
-            if (child instanceof BinaryLogicExpr) {
-                BinaryLogicExpr binary = (BinaryLogicExpr) child;
-                LogicExpr transformedLeft = eliminateNot(new Not(binary.getLeft()));
-                LogicExpr transformedRight = eliminateNot(new Not(binary.getRight()));
-                if (binary instanceof And) {
-                    return new Or(transformedLeft, transformedRight);
-                } else if (binary instanceof Or) {
-                    return new And(transformedLeft, transformedRight);
-                }
+            if (child instanceof And) {
+                And and = (And) child;
+                LogicExpr transformedLeft = eliminateNot(new Not(and.getLeft()));
+                LogicExpr transformedRight = eliminateNot(new Not(and.getRight()));
+                return new Or(transformedLeft, transformedRight);
+            } else if (child instanceof Or) {
+                Or or = (Or) child;
+                LogicExpr transformedLeft = eliminateNot(new Not(or.getLeft()));
+                LogicExpr transformedRight = eliminateNot(new Not(or.getRight()));
+                return new And(transformedLeft, transformedRight);
             } else if (child instanceof Not) {
                 return eliminateNot(((Not) child).getChild());
             } else if (child instanceof PredicateExpr) {

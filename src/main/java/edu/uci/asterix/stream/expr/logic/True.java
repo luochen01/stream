@@ -2,8 +2,9 @@ package edu.uci.asterix.stream.expr.logic;
 
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Expr;
+import edu.uci.asterix.stream.expr.LeafExpr;
 
-public class True extends PredicateExpr {
+public class True extends LeafExpr<Expr> implements PredicateExpr {
 
     public static final True INSTANCE = new True();
 
@@ -12,7 +13,7 @@ public class True extends PredicateExpr {
     }
 
     @Override
-    public LogicExpr dual() {
+    public PredicateExpr dual() {
         return False.INSTANCE;
     }
 
@@ -29,6 +30,11 @@ public class True extends PredicateExpr {
     @Override
     public String toString() {
         return "TRUE";
+    }
+
+    @Override
+    public Expr withChildren(Expr... children) {
+        return this;
     }
 
 }

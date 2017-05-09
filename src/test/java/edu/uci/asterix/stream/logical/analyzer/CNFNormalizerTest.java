@@ -32,7 +32,7 @@ public class CNFNormalizerTest {
 
         LogicExpr expr4 = new Or(new And(t, t), new Or(f, f));
         LogicExpr result4 = CNFNormalizer.INSTANCE.toCNF(expr4);
-        Assert.assertEquals(new And(new Or(t, new Or(t, t)), new Or(t, new Or(f, f))), result4);
+        Assert.assertEquals(new And(new Or(t, new Or(f, f)), new Or(t, new Or(f, f))), result4);
 
         LogicExpr expr5 = new Not(new And(t, t));
         LogicExpr result5 = CNFNormalizer.INSTANCE.toCNF(expr5);

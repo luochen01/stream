@@ -17,4 +17,9 @@ public class Avg extends AggregateExpr {
         return child.getResultType();
     }
 
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new Avg(children[0]);
+    }
+
 }

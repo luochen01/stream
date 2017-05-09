@@ -1,13 +1,14 @@
 package edu.uci.asterix.stream.expr.fields;
 
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.expr.LeafExpr;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.FieldType;
 import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.utils.Assertion;
 
-public class FieldAccess extends LeafExpr {
+public class FieldAccess extends LeafExpr<Expr> {
 
     private final Field field;
 
@@ -60,6 +61,11 @@ public class FieldAccess extends LeafExpr {
         } else if (!field.equals(other.field))
             return false;
         return true;
+    }
+
+    @Override
+    public Expr withChildren(Expr... children) {
+        return this;
     }
 
 }

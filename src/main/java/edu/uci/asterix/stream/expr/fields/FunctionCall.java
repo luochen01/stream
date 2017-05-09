@@ -3,12 +3,13 @@ package edu.uci.asterix.stream.expr.fields;
 import java.util.Arrays;
 
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.expr.AbstractExpr;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.field.FieldType;
 import edu.uci.asterix.stream.func.Function;
 import edu.uci.asterix.stream.utils.Assertion;
 
-public class FunctionCall extends Expr {
+public class FunctionCall extends AbstractExpr<Expr> {
 
     protected final Expr[] arguments;
 
@@ -80,6 +81,11 @@ public class FunctionCall extends Expr {
         } else if (!function.equals(other.function))
             return false;
         return true;
+    }
+
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new FunctionCall(function, children);
     }
 
 }

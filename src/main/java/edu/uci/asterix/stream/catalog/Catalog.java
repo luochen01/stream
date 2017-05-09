@@ -26,7 +26,7 @@ public class Catalog {
         }
     }
 
-    private Map<String, Table> tableMap = new HashMap<>();
+    private Map<String, TableImpl> tableMap = new HashMap<>();
 
     private Map<String, Function> functionMap = new HashMap<>();
 
@@ -34,11 +34,11 @@ public class Catalog {
 
     }
 
-    public Table getTable(String name) {
+    public TableImpl getTable(String name) {
         return tableMap.get(name);
     }
 
-    public void addTable(Table table) throws CatalogException {
+    public void addTable(TableImpl table) throws CatalogException {
         if (getTable(table.getTableName()) != null) {
             throw new CatalogException("Table " + table.getTableName() + " already exists.");
         }
@@ -58,38 +58,38 @@ public class Catalog {
 
     private static void registerTables() throws CatalogException {
         //building and user data
-        Table group = new TableImpl("Group");
+        TableImpl group = new TableImpl("Group");
         group.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
         group.addField(new Field("name", PrimitiveType.get(FieldTypeName.STRING)));
         group.addField(new Field("description", PrimitiveType.get(FieldTypeName.STRING)));
         Catalog.INSTANCE.addTable(group);
 
-        Table user = new TableImpl("User");
+        TableImpl user = new TableImpl("User");
         user.addField(new Field("email", PrimitiveType.get(FieldTypeName.STRING)));
         user.addField(new Field("string", PrimitiveType.get(FieldTypeName.STRING)));
         user.addField(new Field("groups", new ArrayType(group.getSchema())));
         Catalog.INSTANCE.addTable(user);
 
-        Table location = new TableImpl("Location");
+        TableImpl location = new TableImpl("Location");
         location.addField(new Field("x", PrimitiveType.get(FieldTypeName.REAL)));
         location.addField(new Field("y", PrimitiveType.get(FieldTypeName.REAL)));
         location.addField(new Field("z", PrimitiveType.get(FieldTypeName.REAL)));
         Catalog.INSTANCE.addTable(location);
 
-        Table region = new TableImpl("Region");
+        TableImpl region = new TableImpl("Region");
         region.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
         region.addField(new Field("name", PrimitiveType.get(FieldTypeName.STRING)));
         region.addField(new Field("floor", PrimitiveType.get(FieldTypeName.INTEGER)));
         region.addField(new Field("geometry", new ArrayType(location.getSchema())));
         Catalog.INSTANCE.addTable(region);
 
-        Table infrastructureType = new TableImpl("InfrastructureType");
+        TableImpl infrastructureType = new TableImpl("InfrastructureType");
         infrastructureType.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
         infrastructureType.addField(new Field("name", PrimitiveType.get(FieldTypeName.STRING)));
         infrastructureType.addField(new Field("description", PrimitiveType.get(FieldTypeName.STRING)));
         Catalog.INSTANCE.addTable(infrastructureType);
 
-        Table infrastructure = new TableImpl("Infrastructure");
+        TableImpl infrastructure = new TableImpl("Infrastructure");
         infrastructure.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
         infrastructure.addField(new Field("name", PrimitiveType.get(FieldTypeName.STRING)));
         infrastructure.addField(new Field("type", infrastructureType.getSchema()));
@@ -97,13 +97,13 @@ public class Catalog {
         Catalog.INSTANCE.addTable(infrastructure);
 
         //devices
-        Table platformType = new TableImpl("PlatformType");
+        TableImpl platformType = new TableImpl("PlatformType");
         platformType.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
         platformType.addField(new Field("name", PrimitiveType.get(FieldTypeName.STRING)));
         platformType.addField(new Field("description", PrimitiveType.get(FieldTypeName.STRING)));
         Catalog.INSTANCE.addTable(platformType);
 
-        Table platform = new TableImpl("Platform");
+        TableImpl platform = new TableImpl("Platform");
         platform.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
         platform.addField(new Field("name", PrimitiveType.get(FieldTypeName.STRING)));
         platform.addField(new Field("description", PrimitiveType.get(FieldTypeName.STRING)));
@@ -113,7 +113,7 @@ public class Catalog {
         Catalog.INSTANCE.addTable(platform);
 
         //sensors and observations
-        Table sensorType = new TableImpl("SensorType");
+        TableImpl sensorType = new TableImpl("SensorType");
         sensorType.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
         sensorType.addField(new Field("name", PrimitiveType.get(FieldTypeName.STRING)));
         sensorType.addField(new Field("description", PrimitiveType.get(FieldTypeName.STRING)));
@@ -121,7 +121,7 @@ public class Catalog {
         sensorType.addField(new Field("payloadSchema", PrimitiveType.get(FieldTypeName.STRING)));
         Catalog.INSTANCE.addTable(sensorType);
 
-        Table sensor = new TableImpl("Sensor");
+        TableImpl sensor = new TableImpl("Sensor");
         sensor.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
         sensor.addField(new Field("name", PrimitiveType.get(FieldTypeName.STRING)));
         sensor.addField(new Field("description", PrimitiveType.get(FieldTypeName.STRING)));
@@ -135,14 +135,14 @@ public class Catalog {
         sensor.addField(new Field("port", PrimitiveType.get(FieldTypeName.STRING)));
         Catalog.INSTANCE.addTable(sensor);
 
-        Table observationType = new TableImpl("ObservationType");
+        TableImpl observationType = new TableImpl("ObservationType");
         observationType.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
         observationType.addField(new Field("name", PrimitiveType.get(FieldTypeName.STRING)));
         observationType.addField(new Field("description", PrimitiveType.get(FieldTypeName.STRING)));
         observationType.addField(new Field("payloadSchema", PrimitiveType.get(FieldTypeName.STRING)));
         Catalog.INSTANCE.addTable(observationType);
 
-        Table observation = new TableImpl("Observation");
+        TableImpl observation = new TableImpl("Observation");
         observation.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
         observation.addField(new Field("sensor", sensor.getSchema()));
         observation.addField(new Field("timestamp", PrimitiveType.get(FieldTypeName.STRING)));

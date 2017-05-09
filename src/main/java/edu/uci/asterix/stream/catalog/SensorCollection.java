@@ -1,9 +1,7 @@
-package edu.uci.asterix.stream.parser;
+package edu.uci.asterix.stream.catalog;
 
 import java.util.List;
 
-import edu.uci.asterix.stream.catalog.CatalogException;
-import edu.uci.asterix.stream.catalog.Table;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.logical.LogicalPlan;
@@ -52,4 +50,7 @@ public class SensorCollection implements Table {
         return this.schema.getFields();
     }
 
+    public void print(StringBuilder sb, int level) {
+        plan.print(sb, level);
+    }
 }

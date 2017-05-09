@@ -22,4 +22,9 @@ public class Count extends AggregateExpr {
         return PrimitiveType.get(FieldTypeName.INTEGER);
     }
 
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new Count(children[0]);
+    }
+
 }

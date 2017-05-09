@@ -3,30 +3,38 @@ package edu.uci.asterix.stream.execution.operators;
 import java.util.List;
 
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.expr.SortOrder;
-import edu.uci.asterix.stream.field.Field;
-import edu.uci.asterix.stream.field.StructType;
+import edu.uci.asterix.stream.logical.LogicalSort;
+import edu.uci.asterix.stream.utils.Utils;
 
-public class SortOperator extends UnaryOperator {
+public class SortOperator extends UnaryOperator<LogicalSort> {
 
-    protected final List<Field> sortFields;
+    protected final List<Expr> sortFields;
     protected final SortOrder order;
 
-    public SortOperator(Operator child, List<Field> sortFields, SortOrder order) {
-        super(child);
-        this.sortFields = sortFields;
-        this.order = order;
-    }
-
-    @Override
-    public StructType getSchema() {
-        return child.getSchema();
+    public SortOperator(Operator child, LogicalSort logicalSort) {
+        super(child, logicalSort);
+        this.sortFields = logicalSort.getSortFields();
+        this.order = logicalSort.getOrder();
     }
 
     @Override
     protected Tuple nextImpl() {
         //TODO
         return null;
+    }
+
+    @Override
+    public String getName() {
+        return "SORT";
+    }
+
+    @Override
+    protected void printContent(StringBuilder sb) {
+        sb.append(Utils.format(sortFields, ","));
+        sb.append("  ");
+        sb.append(order);
     }
 
 }

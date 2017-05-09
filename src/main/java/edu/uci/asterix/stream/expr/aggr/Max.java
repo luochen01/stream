@@ -17,4 +17,9 @@ public class Max extends AggregateExpr {
         return child.getResultType();
     }
 
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new Max(children[0]);
+    }
+
 }

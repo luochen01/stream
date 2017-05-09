@@ -33,12 +33,16 @@ public class LogicalProject extends UnaryLogicalPlan {
     }
 
     @Override
-    protected void printContent(StringBuilder sb) {
+    protected void printContent(StringBuilder sb, int level) {
         sb.append(Utils.format(projectList, ","));
+    }
+
+    public List<Expr> getProjectList() {
+        return projectList;
     }
 
     @Override
     public String getName() {
-        return "PROJECT";
+        return "LOGICAL PROJECT";
     }
 }

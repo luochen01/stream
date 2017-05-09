@@ -36,4 +36,9 @@ public class Multiply extends BinaryArithmeticExpr {
         }
     }
 
+    @Override
+    public Expr withChildren(Expr... children) {
+        return new Multiply(children[0], children[1]);
+    }
+
 }

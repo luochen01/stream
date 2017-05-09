@@ -3,6 +3,9 @@ package edu.uci.asterix.stream.parser;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.uci.asterix.stream.catalog.ObservationStream;
+import edu.uci.asterix.stream.catalog.SensorCollection;
+
 /**
  * Provides necessary information for processing a query
  * 
