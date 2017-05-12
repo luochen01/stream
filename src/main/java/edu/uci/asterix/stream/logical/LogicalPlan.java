@@ -23,6 +23,7 @@ public abstract class LogicalPlan {
         sb.append(getName());
         sb.append(":");
         printContent(sb, level);
+
         sb.append("\n");
         for (LogicalPlan child : children()) {
             child.print(sb, level + 1);

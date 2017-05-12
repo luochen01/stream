@@ -15,12 +15,6 @@ public class FilterOperator extends UnaryOperator<LogicalFilter> {
     }
 
     @Override
-    public Tuple nextImpl() {
-        //TODO implement
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public String getName() {
         return "FILTER";
     }
@@ -28,6 +22,18 @@ public class FilterOperator extends UnaryOperator<LogicalFilter> {
     @Override
     protected void printContent(StringBuilder sb) {
         sb.append(condition.toString());
+    }
+
+    @Override
+    public Tuple next() {
+        Tuple tuple = null;
+        while ((tuple = child.next()) != null) {
+            Boolean result = (Boolean) condition.eval(tuple);
+            if (result != null && result == true) {
+                return tuple;
+            }
+        }
+        return null;
 
     }
 

@@ -7,7 +7,7 @@ import edu.uci.asterix.stream.logical.LogicalStreamScan;
 /**
  * For this operator, I think it should first collect all data from the underling sensor (by executing the child operator),
  * and then push streams upwards
- * 
+ *
  * @author luochen
  */
 public class SensorToObservationStreamOperator extends AbstractStreamOperator<LogicalStreamScan> {
@@ -33,7 +33,8 @@ public class SensorToObservationStreamOperator extends AbstractStreamOperator<Lo
     }
 
     @Override
-    protected Tuple nextImpl() {
+    public Tuple next() {
+        // TODO Auto-generated method stub
         return null;
     }
 

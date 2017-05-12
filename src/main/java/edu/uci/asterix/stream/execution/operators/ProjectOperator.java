@@ -17,9 +17,18 @@ public class ProjectOperator extends UnaryOperator<LogicalProject> {
     }
 
     @Override
-    protected Tuple nextImpl() {
-        //TODO implement
-        return null;
+    public Tuple next() {
+        Tuple tuple = child.next();
+        if (tuple == null) {
+            return null;
+        } else {
+            Object[] objects = new Object[projectList.size()];
+            for (int i = 0; i < objects.length; i++) {
+                objects[i] = projectList.get(i).eval(tuple);
+            }
+            return new Tuple(getSchema(), objects);
+        }
+
     }
 
     @Override

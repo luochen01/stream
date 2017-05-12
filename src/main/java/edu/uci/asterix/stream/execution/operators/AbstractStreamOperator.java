@@ -1,12 +1,9 @@
 package edu.uci.asterix.stream.execution.operators;
 
-import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.logical.LogicalPlan;
 
 public abstract class AbstractStreamOperator<T extends LogicalPlan> implements Operator {
-
-    protected boolean closed = false;
 
     protected final T logicalPlan;
 
@@ -25,21 +22,13 @@ public abstract class AbstractStreamOperator<T extends LogicalPlan> implements O
     }
 
     @Override
-    public Tuple next() {
-        if (closed) {
-            return null;
-        }
-        return nextImpl();
-    }
-
-    protected abstract Tuple nextImpl();
-
     public String toString() {
         StringBuilder sb = new StringBuilder();
         print(sb, 0);
         return sb.toString();
     }
 
+    @Override
     public void print(StringBuilder sb, int level) {
         for (int i = 0; i < level; i++) {
             sb.append("  ");

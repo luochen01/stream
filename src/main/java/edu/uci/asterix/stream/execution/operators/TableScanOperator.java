@@ -14,10 +14,9 @@ public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> 
     }
 
     @Override
-    protected Tuple nextImpl() {
-
-        //TODO impl
-        throw new UnsupportedOperationException();
+    public Tuple next() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override

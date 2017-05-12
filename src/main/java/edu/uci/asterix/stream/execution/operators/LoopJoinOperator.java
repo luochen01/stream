@@ -25,8 +25,8 @@ public class LoopJoinOperator extends BinaryOperator<LogicalJoin> {
     }
 
     @Override
-    protected Tuple nextImpl() {
-        //TODO
+    public Tuple next() {
+        // TODO Auto-generated method stub
         return null;
     }
 

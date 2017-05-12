@@ -22,8 +22,7 @@ public class GroupbyOperator extends UnaryOperator<LogicalGroupby> {
     }
 
     @Override
-    protected Tuple nextImpl() {
-        //TODO
+    public Tuple next() {
         return null;
     }
 

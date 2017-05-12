@@ -6,7 +6,7 @@ import edu.uci.asterix.stream.logical.LogicalStreamScan;
 
 /**
  * stream definition -> stream
- * 
+ *
  * @author luochen
  */
 public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
@@ -22,8 +22,8 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
     }
 
     @Override
-    protected Tuple nextImpl() {
-        //TODO implement
+    public Tuple next() {
+        // TODO Auto-generated method stub
         return null;
     }
 
