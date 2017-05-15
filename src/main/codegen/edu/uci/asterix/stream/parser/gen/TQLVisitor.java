@@ -41,6 +41,12 @@ public interface TQLVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitArray_get_item(@NotNull TQLParser.Array_get_itemContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link TQLParser#type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitType(@NotNull TQLParser.TypeContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link TQLParser#time_interval}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -58,6 +64,13 @@ public interface TQLVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitFrom_stream(@NotNull TQLParser.From_streamContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code cast}
+	 * labeled alternative in {@link TQLParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCast(@NotNull TQLParser.CastContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link TQLParser#literal_value}.
 	 * @param ctx the parse tree
@@ -109,6 +122,13 @@ public interface TQLVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitComparison(@NotNull TQLParser.ComparisonContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code like}
+	 * labeled alternative in {@link TQLParser#term_expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLike(@NotNull TQLParser.LikeContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code in}
 	 * labeled alternative in {@link TQLParser#term_expr}.

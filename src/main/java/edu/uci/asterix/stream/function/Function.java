@@ -1,4 +1,4 @@
-package edu.uci.asterix.stream.func;
+package edu.uci.asterix.stream.function;
 
 import edu.uci.asterix.stream.field.FieldType;
 

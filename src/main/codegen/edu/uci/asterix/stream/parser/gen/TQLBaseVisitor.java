@@ -48,6 +48,13 @@ public class TQLBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements TQ
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitType(@NotNull TQLParser.TypeContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitTime_interval(@NotNull TQLParser.Time_intervalContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -63,6 +70,13 @@ public class TQLBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements TQ
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitFrom_stream(@NotNull TQLParser.From_streamContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitCast(@NotNull TQLParser.CastContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -119,6 +133,13 @@ public class TQLBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements TQ
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitComparison(@NotNull TQLParser.ComparisonContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitLike(@NotNull TQLParser.LikeContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

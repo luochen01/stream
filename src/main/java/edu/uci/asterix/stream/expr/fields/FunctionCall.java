@@ -6,7 +6,7 @@ import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.AbstractExpr;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.field.FieldType;
-import edu.uci.asterix.stream.func.Function;
+import edu.uci.asterix.stream.function.Function;
 import edu.uci.asterix.stream.utils.Assertion;
 
 public class FunctionCall extends AbstractExpr<Expr> {

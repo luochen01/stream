@@ -1,9 +1,9 @@
 package edu.uci.asterix.stream.exception;
 
-public class StreamExecutionException extends Exception {
+public class StreamExecutionException extends RuntimeException {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

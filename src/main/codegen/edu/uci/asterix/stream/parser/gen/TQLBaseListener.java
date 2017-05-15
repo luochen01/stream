@@ -67,6 +67,18 @@ public class TQLBaseListener implements TQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterType(@NotNull TQLParser.TypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitType(@NotNull TQLParser.TypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterTime_interval(@NotNull TQLParser.Time_intervalContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -98,6 +110,18 @@ public class TQLBaseListener implements TQLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitFrom_stream(@NotNull TQLParser.From_streamContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCast(@NotNull TQLParser.CastContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCast(@NotNull TQLParser.CastContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -194,6 +218,18 @@ public class TQLBaseListener implements TQLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitComparison(@NotNull TQLParser.ComparisonContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterLike(@NotNull TQLParser.LikeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitLike(@NotNull TQLParser.LikeContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

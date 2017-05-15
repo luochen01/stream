@@ -1,4 +1,4 @@
-package edu.uci.asterix.stream.func;
+package edu.uci.asterix.stream.function;
 
 import edu.uci.asterix.stream.field.FieldType;
 import edu.uci.asterix.stream.utils.Assertion;
@@ -28,4 +28,11 @@ public abstract class Function2 extends AbstractFunction {
         }
     }
 
+    @Override
+    public Object eval(Object... params) {
+        Assertion.asserts(params.length == 2);
+        return eval(params[0], params[1]);
+    }
+
+    public abstract Object eval(Object param1, Object param2);
 }

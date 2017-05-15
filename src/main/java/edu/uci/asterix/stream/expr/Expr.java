@@ -1,5 +1,6 @@
 package edu.uci.asterix.stream.expr;
 
+import edu.uci.asterix.stream.exception.StreamExecutionException;
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.FieldType;
@@ -14,8 +15,9 @@ public interface Expr {
 
     public FieldType getResultType();
 
-    public Object eval(Tuple input);
+    public Object eval(Tuple input) throws StreamExecutionException;
 
+    @Override
     public String toString();
 
     public Expr withChildren(Expr... children);

@@ -120,13 +120,21 @@ expr
 	| COUNT '(' '*' ')' #count
 	| agg_func '(' expr ')' #aggr
 	| function_name '(' parameter_list? ')' #function
-	| '(' expr ')' #parentheses;
+	| '(' expr ')' #parentheses
+	| CAST '(' expr AS type ')' #cast;
+
+type:
+  INT|
+  REAL|
+  BOOLEAN|
+  STRING;
 
 field_access:
   any_name ('.' any_name)*;
 
 term_expr
 	: expr ('<' | '<=' | '>' | '>=' | '=' | '!=') expr #comparison
+	| expr LIKE STRING_LITERAL #like
 	| expr NOT? IN expr #in
 	| expr NOT_NULL #not_null
 	| expr IS_NULL #is_null 
@@ -248,6 +256,24 @@ MAX:
 
 COUNT:
   C O U N T;
+
+CAST:
+  C A S T;
+  
+INT:
+  I N T;
+  
+REAL:
+  R E A L;
+  
+BOOLEAN:
+  B O O L E A N;
+
+STRING:
+  S T R I N G;
+
+LIKE:
+L I K E;
 
 IDENTIFIER
 	:'`' (~'`' | '``')* '`'

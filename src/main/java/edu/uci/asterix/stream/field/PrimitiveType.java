@@ -15,9 +15,12 @@ public class PrimitiveType extends AbstractFieldType {
     }
 
     public static PrimitiveType get(FieldTypeName typeName) {
-        PrimitiveType type = types.get(typeName);
-        assert (type != null);
-        return type;
+        if (typeName == null) {
+            return null;
+        } else {
+            PrimitiveType type = types.get(typeName);
+            return type;
+        }
     }
 
     private PrimitiveType(FieldTypeName typeName) {

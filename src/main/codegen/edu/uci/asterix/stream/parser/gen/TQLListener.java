@@ -57,6 +57,16 @@ public interface TQLListener extends ParseTreeListener {
 	 */
 	void exitArray_get_item(@NotNull TQLParser.Array_get_itemContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link TQLParser#type}.
+	 * @param ctx the parse tree
+	 */
+	void enterType(@NotNull TQLParser.TypeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link TQLParser#type}.
+	 * @param ctx the parse tree
+	 */
+	void exitType(@NotNull TQLParser.TypeContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link TQLParser#time_interval}.
 	 * @param ctx the parse tree
 	 */
@@ -86,6 +96,18 @@ public interface TQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitFrom_stream(@NotNull TQLParser.From_streamContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code cast}
+	 * labeled alternative in {@link TQLParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterCast(@NotNull TQLParser.CastContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code cast}
+	 * labeled alternative in {@link TQLParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitCast(@NotNull TQLParser.CastContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link TQLParser#literal_value}.
 	 * @param ctx the parse tree
@@ -172,6 +194,18 @@ public interface TQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitComparison(@NotNull TQLParser.ComparisonContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code like}
+	 * labeled alternative in {@link TQLParser#term_expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterLike(@NotNull TQLParser.LikeContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code like}
+	 * labeled alternative in {@link TQLParser#term_expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitLike(@NotNull TQLParser.LikeContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code in}
 	 * labeled alternative in {@link TQLParser#term_expr}.

@@ -7,7 +7,7 @@ import edu.uci.asterix.stream.field.ArrayType;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.FieldTypeName;
 import edu.uci.asterix.stream.field.PrimitiveType;
-import edu.uci.asterix.stream.func.Function;
+import edu.uci.asterix.stream.function.Function;
 
 /**
  * A catalog contains a set of tables

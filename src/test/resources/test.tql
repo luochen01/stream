@@ -15,5 +15,5 @@ WHERE sen.`Sensor.type`.name = "WiFi AP";
 observation_stream1 = SENSORS_TO_OBSERVATION_STREAM(sensor_collection2);
 
 
-SELECT count(*)
+SELECT CAST(count(*) AS string)
 FROM observation_stream1 obs1 RANGE '1 minutes' SLIDE '1 minutes';

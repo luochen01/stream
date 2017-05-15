@@ -22,6 +22,7 @@ import edu.uci.asterix.stream.catalog.ObservationStream;
 import edu.uci.asterix.stream.catalog.SensorCollection;
 import edu.uci.asterix.stream.catalog.Table;
 import edu.uci.asterix.stream.catalog.TableImpl;
+import edu.uci.asterix.stream.expr.Cast;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.expr.SortOrder;
 import edu.uci.asterix.stream.expr.Window;
@@ -51,6 +52,7 @@ import edu.uci.asterix.stream.expr.logic.In;
 import edu.uci.asterix.stream.expr.logic.IsNull;
 import edu.uci.asterix.stream.expr.logic.LessThan;
 import edu.uci.asterix.stream.expr.logic.LessThanOrEqualTo;
+import edu.uci.asterix.stream.expr.logic.Like;
 import edu.uci.asterix.stream.expr.logic.LogicExpr;
 import edu.uci.asterix.stream.expr.logic.Not;
 import edu.uci.asterix.stream.expr.logic.NotEqualTo;
@@ -61,7 +63,7 @@ import edu.uci.asterix.stream.expr.logic.True;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.FieldTypeName;
 import edu.uci.asterix.stream.field.StructType;
-import edu.uci.asterix.stream.func.Function;
+import edu.uci.asterix.stream.function.Function;
 import edu.uci.asterix.stream.logical.LogicalFilter;
 import edu.uci.asterix.stream.logical.LogicalGroupby;
 import edu.uci.asterix.stream.logical.LogicalJoin;
@@ -83,6 +85,7 @@ import edu.uci.asterix.stream.parser.gen.TQLParser.Any_nameContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.ArithmeticContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.Array_get_itemContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.BooleanContext;
+import edu.uci.asterix.stream.parser.gen.TQLParser.CastContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.ComparisonContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.CountContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.Field_accessContext;
@@ -92,6 +95,7 @@ import edu.uci.asterix.stream.parser.gen.TQLParser.FunctionContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.Group_byContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.InContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.Is_nullContext;
+import edu.uci.asterix.stream.parser.gen.TQLParser.LikeContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.LimitContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.LiteralContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.Literal_valueContext;
@@ -114,7 +118,7 @@ import edu.uci.asterix.stream.utils.Assertion;
 
 public class TQLParser {
 
-    private QueryContext queryContext = new QueryContext();
+    private final QueryContext queryContext = new QueryContext();
 
     public QueryContext parse(String file) throws IOException {
 
@@ -211,7 +215,7 @@ public class TQLParser {
         /**
          * table name (aliased) -> table
          */
-        private Map<String, Table> accessedTables = new HashMap<>();
+        private final Map<String, Table> accessedTables = new HashMap<>();
 
         private LogicalPlan currentPlan = null;
 
@@ -471,6 +475,13 @@ public class TQLParser {
         }
 
         @Override
+        public Expr visitLike(LikeContext ctx) {
+            Expr child = ctx.expr().accept(this);
+            String pattern = getStringContent(ctx.STRING_LITERAL().getText());
+            return new Like(child, pattern);
+        }
+
+        @Override
         public Expr visitComparison(ComparisonContext ctx) {
             Expr left = ctx.expr(0).accept(this);
             Expr right = ctx.expr(1).accept(this);
@@ -491,6 +502,25 @@ public class TQLParser {
                 default:
                     throw new ParsingException("Unknown comparator " + operator);
             }
+        }
+
+        @Override
+        public Expr visitCast(CastContext ctx) {
+            Expr child = ctx.expr().accept(this);
+            FieldTypeName typeName = null;
+            if (ctx.type().INT() != null) {
+                typeName = FieldTypeName.INTEGER;
+            } else if (ctx.type().REAL() != null) {
+                typeName = FieldTypeName.REAL;
+            } else if (ctx.type().STRING() != null) {
+                typeName = FieldTypeName.STRING;
+            } else if (ctx.type().BOOLEAN() != null) {
+                typeName = FieldTypeName.BOOLEAN;
+            } else {
+                throw new ParsingException("Unknown data type in " + ctx.toString());
+            }
+
+            return new Cast(child, typeName);
         }
 
         @Override

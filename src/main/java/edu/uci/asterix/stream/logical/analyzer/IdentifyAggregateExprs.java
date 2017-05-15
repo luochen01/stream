@@ -1,6 +1,7 @@
 package edu.uci.asterix.stream.logical.analyzer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,11 +27,6 @@ public class IdentifyAggregateExprs implements LogicalPlanAnalyzer {
 
         LogicalProject project = (LogicalProject) plan;
         LogicalPlan child = project.getChild();
-        if (!(child instanceof LogicalGroupby)) {
-            return plan;
-        }
-
-        LogicalGroupby groupBy = (LogicalGroupby) child;
 
         List<AggregateExpr> aggregateExprs = new ArrayList<>();
         List<Expr> projectList = project.getProjectList();
@@ -38,8 +34,22 @@ public class IdentifyAggregateExprs implements LogicalPlanAnalyzer {
             identify(expr, aggregateExprs);
         });
 
+        if (aggregateExprs.isEmpty() && !(child instanceof LogicalGroupby)) {
+            //no aggregation here
+            return plan;
+        }
+
+        LogicalGroupby groupBy = null;
+        if (child instanceof LogicalGroupby) {
+            groupBy = (LogicalGroupby) child;
+        } else {
+            //create a default group by operator here
+            groupBy = new LogicalGroupby(child, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
+        }
+
         LogicalPlan resultPlan = new LogicalGroupby(groupBy.getChild(), groupBy.getByFields(), aggregateExprs,
                 groupBy.getHavingCondition());
+
         StructType resultSchema = resultPlan.getSchema();
 
         List<Expr> resultProjectList = projectList.stream().map(expr -> replace(expr, aggregateExprs, resultSchema))
@@ -61,7 +71,7 @@ public class IdentifyAggregateExprs implements LogicalPlanAnalyzer {
         List<AggregateExpr> aggrs = Exprs.collect(projectExpr, AggregateExpr.class);
         for (AggregateExpr aggr : aggrs) {
             if (!aggregateExprs.contains(aggr)) {
-                aggregateExprs.add((AggregateExpr) aggr);
+                aggregateExprs.add(aggr);
             }
         }
 

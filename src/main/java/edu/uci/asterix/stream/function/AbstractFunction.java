@@ -1,4 +1,4 @@
-package edu.uci.asterix.stream.func;
+package edu.uci.asterix.stream.function;
 
 public abstract class AbstractFunction implements Function {
 
