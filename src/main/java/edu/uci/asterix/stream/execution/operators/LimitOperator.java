@@ -10,6 +10,9 @@ public class LimitOperator extends UnaryOperator<LogicalLimit> {
 
     protected final int offset;
 
+    private static int position = 0;
+    private static int count = 0;
+
     public LimitOperator(Operator child, LogicalLimit logicalLimit) {
         super(child, logicalLimit);
 
@@ -38,6 +41,21 @@ public class LimitOperator extends UnaryOperator<LogicalLimit> {
     @Override
     public Tuple next() {
         // TODO Auto-generated method stub
+        Tuple tuple = null;
+
+        while(position < offset)
+        {
+            position++;
+            tuple = child.next();
+
+        }
+        while(count < limit)
+        {
+            tuple = child.next();
+            count++;
+            return tuple;
+        }
+
         return null;
     }
 
