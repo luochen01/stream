@@ -3,6 +3,7 @@ package edu.uci.asterix.stream.execution.operators;
 
 import edu.uci.asterix.stream.catalog.TableImpl;
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.logical.LogicalTableScan;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -12,7 +13,9 @@ import org.json.simple.parser.ParseException;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> {
 
@@ -25,7 +28,7 @@ public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> 
         this.table = logicalScan.getTable();
 
         try {
-            FileReader fileReader = new FileReader("src/test/resources/data.json");
+            FileReader fileReader = new FileReader(table.getTablePath());
             JSONParser parser = new JSONParser();
             JSONObject table = (JSONObject) parser.parse(fileReader);
             JSONArray rows = (JSONArray) table.get("rows");
@@ -47,23 +50,12 @@ public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> 
        JSONObject row = items.next();
        if(row != null)
        {
-
-            String id = (String) row.get("id");
-
-            String payload = (String) row.get("payload");
-
-            String timeStamp = (String) row.get("timeStamp");
-
-            String sensorId = (String) row.get("sensor_id");
-
-            String obs = (String) row.get("observation_type_id");
-
-            Object[] values = {id, payload,timeStamp,sensorId,obs};
-
-            return new Tuple(this.getSchema(), values);
-
+           List<Object> values = new ArrayList<>();
+           for( Field field:this.getSchema().getFields()) {
+               values.add(row.get(field));
+           }
+           return new Tuple(this.getSchema(), values.toArray());
         }
-
         return null;
     }
 

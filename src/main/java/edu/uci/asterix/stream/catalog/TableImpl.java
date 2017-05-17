@@ -13,6 +13,10 @@ public class TableImpl implements Table {
 
     private final String tableName;
 
+
+
+    private String tablePath;
+
     private final List<Field> fields = new ArrayList<>();
 
     private final Map<String, Field> fieldMap = new HashMap<>();
@@ -20,9 +24,15 @@ public class TableImpl implements Table {
     public TableImpl(String tableName) {
         this.tableName = tableName;
     }
-
+    public void setTablePath(String tablePath) {
+        this.tablePath = tablePath;
+    }
     public String getTableName() {
         return tableName;
+    }
+
+    public String getTablePath() {
+        return tablePath;
     }
 
     @Override
