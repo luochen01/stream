@@ -34,6 +34,8 @@ public class Tuple {
         values[i] = value;
     }
 
+    public Object[] getAllValues(){return values;}
+
     @Override
     public String toString() {
         return Arrays.toString(values);
