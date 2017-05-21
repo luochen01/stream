@@ -13,6 +13,10 @@ import org.slf4j.LoggerFactory;
 public class StreamConfig {
     public static final String Case_Sensitive = "case.sensitive";
 
+    public static final String Stream_Time_Field = "stream.time.field";
+
+    public static final String Stream_Time_Format = "stream.time.format";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamConfig.class);
 
     public static final StreamConfig Instance = new StreamConfig();
@@ -58,6 +62,14 @@ public class StreamConfig {
         return getBoolean(Case_Sensitive, false);
     }
 
+    public String streamTimeField() {
+        return getString(Stream_Time_Field, "timeStamp");
+    }
+
+    public String streamTimeFormat() {
+        return getString(Stream_Time_Format, "yyyy-MM-dd HH:mm:ss");
+    }
+
     public boolean getBoolean(String key, boolean defaultValue) {
         return (boolean) get(key, defaultValue, boolean.class);
     }
@@ -74,9 +86,13 @@ public class StreamConfig {
         return (float) get(key, defaultValue, float.class);
     }
 
+    public String getString(String key, String defaultValue) {
+        return (String) get(key, defaultValue, String.class);
+    }
+
     private Object get(String key, Object defaultValue, Class<?> type) {
         String value = properties.getProperty(key);
-        if (value == null) {
+        if (value == null || value.isEmpty()) {
             return defaultValue;
         }
         if (type == Integer.class) {
@@ -89,6 +105,8 @@ public class StreamConfig {
             return Float.parseFloat(value);
         } else if (type == double.class) {
             return Double.parseDouble(value);
+        } else if (type == String.class) {
+            return value;
         }
         throw new IllegalArgumentException("Unknown type " + type);
 

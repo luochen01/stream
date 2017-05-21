@@ -12,7 +12,7 @@ import edu.uci.asterix.stream.function.Function;
 /**
  * A catalog contains a set of tables
  * for simplicity, schema is omitted here
- * 
+ *
  * @author luochen
  */
 public class Catalog {
@@ -26,9 +26,9 @@ public class Catalog {
         }
     }
 
-    private Map<String, TableImpl> tableMap = new HashMap<>();
+    private final Map<String, TableImpl> tableMap = new HashMap<>();
 
-    private Map<String, Function> functionMap = new HashMap<>();
+    private final Map<String, Function> functionMap = new HashMap<>();
 
     private Catalog() {
 
@@ -145,7 +145,7 @@ public class Catalog {
         TableImpl observation = new TableImpl("Observation");
         observation.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
         observation.addField(new Field("sensor", sensor.getSchema()));
-        observation.addField(new Field("timestamp", PrimitiveType.get(FieldTypeName.STRING)));
+        observation.addField(new Field("timeStamp", PrimitiveType.get(FieldTypeName.STRING)));
         observation.addField(new Field("payload", location.getSchema()));
         observation.addField(new Field("type", observationType.getSchema()));
         Catalog.INSTANCE.addTable(observation);

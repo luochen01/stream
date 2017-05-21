@@ -1,6 +1,7 @@
 package edu.uci.asterix.stream.planner;
 
 import edu.uci.asterix.stream.catalog.Table;
+import edu.uci.asterix.stream.execution.DefaultSystemTimeProvider;
 import edu.uci.asterix.stream.execution.operators.FilterOperator;
 import edu.uci.asterix.stream.execution.operators.GroupbyOperator;
 import edu.uci.asterix.stream.execution.operators.HashJoinOperator;
@@ -28,7 +29,7 @@ import edu.uci.asterix.stream.logical.UnaryLogicalPlan;
 
 /**
  * Logical Plan -> Operators
- * 
+ *
  * @author luochen
  */
 public class QueryPlanner {
@@ -90,7 +91,7 @@ public class QueryPlanner {
             LogicalStreamScan streamScan = (LogicalStreamScan) plan;
             Operator child = plan(streamScan.getTable().getLogicalPlan());
             Operator streamOperator = new SensorToObservationStreamOperator(child, streamScan);
-            Operator windowOperator = new WindowOperator(streamOperator, streamScan);
+            Operator windowOperator = new WindowOperator(streamOperator, streamScan, new DefaultSystemTimeProvider());
             return windowOperator;
         }
         throw new IllegalArgumentException("Unknown LogicalScan " + plan);

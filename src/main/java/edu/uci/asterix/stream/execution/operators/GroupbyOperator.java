@@ -44,16 +44,16 @@ public class GroupbyOperator extends UnaryOperator<LogicalGroupby> {
 
         }
 
-        for(AggregateExpr agexpr:aggregateExprs)
-        {
-            for(String key :groups.keySet()){
-                List<Tuple> tuples = groups.get(key);
-                for(Tuple t: tuples){
-                    //TODO:Check the correctness
-                   agexpr.eval(t);
-                }
-            }
-        }
+//        for(AggregateExpr agexpr:aggregateExprs)
+//        {
+//            for(String key :groups.keySet()){
+//                List<Tuple> tuples = groups.get(key);
+//                for(Tuple t: tuples){
+//                    //TODO:Check the correctness
+//                   agexpr.eval(t);
+//                }
+//            }
+//        }
 
     }
 

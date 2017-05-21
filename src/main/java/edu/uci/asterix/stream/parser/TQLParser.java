@@ -227,7 +227,7 @@ public class TQLParser {
                 currentPlan = ctx.where().accept(this);
                 //identify join condition
                 IdentifyJoinConditions identify = new IdentifyJoinConditions();
-                currentPlan = identify.analyze(currentPlan);
+                currentPlan  = identify.analyze(currentPlan);
             }
             //select must not be null
             currentPlan = ctx.select().accept(this);
