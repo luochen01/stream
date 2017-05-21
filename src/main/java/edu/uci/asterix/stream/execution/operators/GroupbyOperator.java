@@ -1,9 +1,6 @@
 package edu.uci.asterix.stream.execution.operators;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Expr;
@@ -19,8 +16,8 @@ public class GroupbyOperator extends UnaryOperator<LogicalGroupby> {
     //e.g., count(*) as count
     protected final List<AggregateExpr> aggregateExprs;
 
-    private Map<String, List<Tuple>>groups = new HashMap<>();
-
+    private Map<List<Object>, Object>groups = new HashMap<>();
+    //TODO:Gift-shiva -each eval works on it's operator and returns based on that. read the comments from chen. We need to implement aggregate. Aggregation should be done on the fly based on aggregation type(make a map<List<Object>,int/double>
     public GroupbyOperator(Operator child, LogicalGroupby logicalGroupby) {
         super(child, logicalGroupby);
         this.byFields = logicalGroupby.getByFields();
@@ -29,22 +26,20 @@ public class GroupbyOperator extends UnaryOperator<LogicalGroupby> {
         Tuple tuple;
         while((tuple = child.next()) != null)
         {
-            String keyString ="";
+            List<Object> key = new LinkedList<>();
             for(Expr expr: byFields)
             {
-
-                keyString+=expr.eval(tuple).toString();
+                key.add(expr.eval(tuple));
             }
-            List<Tuple> groupValues = groups.get(keyString);
+            Object groupValues = groups.get(key);
             if(groupValues != null)
             {
-                groupValues.add(tuple);
-                groups.put(keyString, groupValues);
+                groupValues = (double) groupValues +1;
+                groups.put(key, groupValues);
             }
             else{
-                List<Tuple> valueList = new ArrayList<>();
-                valueList.add(tuple);
-                groups.put(keyString, valueList);
+                double value=0;
+                groups.put(key, value);
             }
 
         }

@@ -22,7 +22,7 @@ public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> 
     private final TableImpl table;
 
     private Iterator<JSONObject> items;
-
+//TODO:GIFT-Shiva: When we read a json object, we should parse it(either here or have another method to parse it) to struct,etc.
     public TableScanOperator(LogicalTableScan logicalScan) {
         super(logicalScan);
         this.table = logicalScan.getTable();

@@ -18,7 +18,7 @@ public class SortOperator extends UnaryOperator<LogicalSort> {
         this.sortFields = logicalSort.getSortFields();
         this.order = logicalSort.getOrder();
     }
-
+//TODO:Gift-shiva: In memory sort, have an array of sorted tuples.next returns the new value from sorted array(?)
     @Override
     public Tuple next() {
         // TODO Auto-generated method stub

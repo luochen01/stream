@@ -14,6 +14,7 @@ public class LoopJoinOperator extends BinaryOperator<LogicalJoin> {
 
     protected final LogicExpr condition;
     protected final LogicalJoin logicalJoin;
+    //Keep left in the list, iterate through right
 
     public LoopJoinOperator(Operator left, Operator right, LogicalJoin logicalJoin) {
         super(left, right, logicalJoin);
