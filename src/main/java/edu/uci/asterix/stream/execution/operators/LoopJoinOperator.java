@@ -11,22 +11,13 @@ import edu.uci.asterix.stream.logical.LogicalJoin;
 public class LoopJoinOperator extends BinaryOperator<LogicalJoin> {
 
     protected final LogicExpr condition;
-    private final List<Tuple> leftList;
+    private List<Tuple> leftList;
     private Iterator<Tuple> leftItr;
     private Tuple rightTuple;
 
     public LoopJoinOperator(Operator left, Operator right, LogicalJoin logicalJoin) {
         super(left, right, logicalJoin);
         this.condition = logicalJoin.getJoinCondition();
-        this.leftList = new ArrayList<>();
-
-        Tuple leftTuple = null;
-        while ((leftTuple = left.next()) != null) {
-            leftList.add(leftTuple);
-        }
-
-        rightTuple = right.next();
-        leftItr = leftList.iterator();
     }
 
     @Override
@@ -54,6 +45,33 @@ public class LoopJoinOperator extends BinaryOperator<LogicalJoin> {
             leftItr = leftList.iterator();
         }
         return null;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        if (leftList != null) {
+            leftList.clear();
+            leftList = null;
+        }
+        leftItr = null;
+        rightTuple = null;
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+
+        leftList = new ArrayList<>();
+
+        Tuple leftTuple = null;
+        while ((leftTuple = left.next()) != null) {
+            leftList.add(leftTuple);
+        }
+
+        rightTuple = right.next();
+        leftItr = leftList.iterator();
+
     }
 
 }

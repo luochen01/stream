@@ -13,7 +13,7 @@ public interface Operator {
 
     /**
      * Each operator should have an output schema, i.e., specify the schema of its output tuples
-     * 
+     *
      * @return
      */
     public StructType getSchema();
@@ -24,8 +24,19 @@ public interface Operator {
 
     public String getName();
 
+    @Override
     public String toString();
 
     public void print(StringBuilder sb, int level);
+
+    /**
+     * Should be called before {@link #next()}
+     */
+    public void initialize();
+
+    /**
+     * Should be called after all tuples are returned by {@link #next()}
+     */
+    public void reset();
 
 }

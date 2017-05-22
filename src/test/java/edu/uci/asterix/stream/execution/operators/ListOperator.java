@@ -48,6 +48,14 @@ public class ListOperator implements Operator {
     }
 
     @Override
+    public void reset() {
+    }
+
+    @Override
+    public void initialize() {
+    }
+
+    @Override
     public void print(StringBuilder sb, int level) {
         throw new UnsupportedOperationException();
     }

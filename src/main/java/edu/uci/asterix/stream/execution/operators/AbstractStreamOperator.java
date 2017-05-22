@@ -42,6 +42,20 @@ public abstract class AbstractStreamOperator<T extends LogicalPlan> implements O
         }
     }
 
+    @Override
+    public void reset() {
+        for (Operator child : children()) {
+            child.reset();
+        }
+    }
+
+    @Override
+    public void initialize() {
+        for (Operator child : children()) {
+            child.initialize();
+        }
+    }
+
     protected abstract void printContent(StringBuilder sb);
 
 }

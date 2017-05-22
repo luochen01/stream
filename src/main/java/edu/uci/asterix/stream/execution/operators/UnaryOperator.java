@@ -15,4 +15,5 @@ public abstract class UnaryOperator<T extends UnaryLogicalPlan> extends Abstract
     public Operator[] children() {
         return new Operator[] { child };
     }
+
 }

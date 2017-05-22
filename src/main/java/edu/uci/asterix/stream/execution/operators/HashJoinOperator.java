@@ -1,7 +1,6 @@
 package edu.uci.asterix.stream.execution.operators;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +13,8 @@ import edu.uci.asterix.stream.utils.Assertion;
 public class HashJoinOperator extends BinaryOperator<LogicalJoin> {
 
     protected final EqualTo condition;
-    protected Map<Object, List<Tuple>> leftHash = new Hashtable<>();
+
+    protected Map<Object, List<Tuple>> leftHash;
 
     private Iterator<Tuple> leftItr;
 
@@ -25,21 +25,6 @@ public class HashJoinOperator extends BinaryOperator<LogicalJoin> {
         super(left, right, logicalJoin);
         Assertion.asserts(logicalJoin.isEquiJoin());
         this.condition = (EqualTo) logicalJoin.getJoinCondition();
-
-        Tuple nextChild = null;
-        while ((nextChild = left.next()) != null) {
-            Object leftValue = condition.getLeft().eval(nextChild);
-            if (leftValue != null) {
-                //we should ignore null values
-                List<Tuple> tuples = leftHash.get(leftValue);
-                if (tuples == null) {
-                    tuples = new ArrayList<Tuple>();
-                    leftHash.put(leftValue, tuples);
-                }
-                tuples.add(nextChild);
-            }
-        }
-
     }
 
     @Override
@@ -74,6 +59,36 @@ public class HashJoinOperator extends BinaryOperator<LogicalJoin> {
             }
         }
         return null;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        if (leftHash != null) {
+            leftHash.clear();
+            leftHash = null;
+        }
+        leftItr = null;
+        rightTuple = null;
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+
+        Tuple leftTuple = null;
+        while ((leftTuple = left.next()) != null) {
+            Object leftValue = condition.getLeft().eval(leftTuple);
+            if (leftValue != null) {
+                //we should ignore null values
+                List<Tuple> tuples = leftHash.get(leftValue);
+                if (tuples == null) {
+                    tuples = new ArrayList<Tuple>();
+                    leftHash.put(leftValue, tuples);
+                }
+                tuples.add(leftTuple);
+            }
+        }
     }
 
 }

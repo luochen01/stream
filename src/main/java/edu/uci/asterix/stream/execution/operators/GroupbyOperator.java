@@ -1,6 +1,9 @@
 package edu.uci.asterix.stream.execution.operators;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Expr;
@@ -16,10 +19,9 @@ public class GroupbyOperator extends UnaryOperator<LogicalGroupby> {
     //e.g., count(*) as count
     protected final List<AggregateExpr> aggregateExprs;
 
-    private Iterator<Object[]> iterator;
+    private final Iterator<Object[]> iterator;
 
-    private Map<Object[], Tuple>groups = new HashMap<>();
-
+    private final Map<Object[], Tuple> groups = new HashMap<>();
 
     public GroupbyOperator(Operator child, LogicalGroupby logicalGroupby) {
         super(child, logicalGroupby);
@@ -33,11 +35,11 @@ public class GroupbyOperator extends UnaryOperator<LogicalGroupby> {
 
         Tuple tuple;
 
-        while((tuple = child.next()) != null) {
+        while ((tuple = child.next()) != null) {
 
             //Get key using byFields
 
-            for(Expr expr: byFields) {
+            for (Expr expr : byFields) {
 
                 String byFieldName = expr.toField().getFieldName();
                 int byFieldPosition = currentSchema.getFieldIndex(byFieldName);
@@ -50,19 +52,17 @@ public class GroupbyOperator extends UnaryOperator<LogicalGroupby> {
             //Get aggregate values
             Tuple groupKey = groups.get(key);
 
-
-            if(groupKey != null) {
+            if (groupKey != null) {
                 groupValues = groupKey.getAllValues();
-                for(AggregateExpr agg:aggregateExprs) {
+                for (AggregateExpr agg : aggregateExprs) {
                     int currentPosition = logicalGroupby.getSchema().getFieldIndex(agg.toField().getFieldName());
                     Object currentValue = groupValues[currentPosition];
-                    groupValues[currentPosition] = agg.compute(key, currentValue,tuple);
+                    groupValues[currentPosition] = agg.compute(key, currentValue, tuple);
                 }
-            }
-            else {
-                for(AggregateExpr agg:aggregateExprs) {
+            } else {
+                for (AggregateExpr agg : aggregateExprs) {
                     int currentPosition = logicalGroupby.getSchema().getFieldIndex(agg.toField().getFieldName());
-                    groupValues[currentPosition] = agg.compute(key,null,tuple);
+                    groupValues[currentPosition] = agg.compute(key, null, tuple);
                 }
             }
 
@@ -75,9 +75,8 @@ public class GroupbyOperator extends UnaryOperator<LogicalGroupby> {
     }
 
     @Override
-    public Tuple next()
-    {
-        if(iterator.hasNext()) {
+    public Tuple next() {
+        if (iterator.hasNext()) {
             return groups.get(iterator.next());
         }
         return null;
@@ -86,6 +85,18 @@ public class GroupbyOperator extends UnaryOperator<LogicalGroupby> {
     @Override
     public String getName() {
         return "GROUP BY";
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+        //TODO implement initialize for gorup by
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        //TODO implement reset for group by
     }
 
     @Override

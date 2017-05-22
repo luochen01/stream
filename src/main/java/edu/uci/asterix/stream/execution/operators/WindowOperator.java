@@ -70,6 +70,8 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
         this.timeFieldAccessor = new FieldAccess(this.getSchema().getField(StreamConfig.Instance.streamTimeField()),
                 this.getSchema());
 
+        this.child.initialize();
+
         /**
          * This thread keeps fetching tuples from child,
          * and stores the tuples in bufferQueue
@@ -89,7 +91,7 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
 
         slideTimestampEnd = timeProvider.currentTimeMillis();
         sleep();
-        reset();
+        internalReset();
     }
 
     @Override
@@ -168,7 +170,7 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
     /**
      * Reset is called after each sleep (when the operator is able to produce another table)
      */
-    protected void reset() {
+    protected void internalReset() {
         needSleep = false;
         slideTimestampEnd = slideTimestampEnd + window.getSlide() * 1000;
         slideTimestampBegin = slideTimestampEnd - window.getRange() * 1000;
@@ -189,6 +191,16 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
                 return -1;
             }
         }
+    }
+
+    @Override
+    public void reset() {
+        //do nothing
+    }
+
+    @Override
+    public void initialize() {
+        //do nothing
     }
 
 }
