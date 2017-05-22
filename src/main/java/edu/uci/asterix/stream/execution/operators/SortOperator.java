@@ -1,7 +1,5 @@
 package edu.uci.asterix.stream.execution.operators;
-
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Expr;
@@ -11,24 +9,74 @@ import edu.uci.asterix.stream.utils.Utils;
 
 public class SortOperator extends UnaryOperator<LogicalSort> {
 
+    protected int nextTuple = 0;
     protected final List<Expr> sortFields;
     protected final SortOrder order;
-
     private Iterator<Tuple> itr;
+    List<Tuple> sortedTuples;
 
     public SortOperator(Operator child, LogicalSort logicalSort) {
         super(child, logicalSort);
         this.sortFields = logicalSort.getSortFields();
         this.order = logicalSort.getOrder();
+        sortedTuples = new LinkedList<>();
+        Tuple tuple;
+        while((tuple = child.next())!=null){
+            sortedTuples.add(tuple);
+        }
+        if (sortedTuples.size() > 0) {
+            Collections.sort(sortedTuples, (tuple1, tuple2) -> {
+                int returnValue = 0;
+                for(Expr field: sortFields){
+                   switch (field.getResultType().getFieldTypeName()){
+                       case INTEGER:
+                       {
+                           returnValue = (int)field.eval(tuple1) - (int)field.eval(tuple2);
+                           break;
+                       }
+                       case STRING:
+                       {
+                           returnValue = ((String) field.eval(tuple1)).compareTo((String) field.eval(tuple2));
+                           break;
+                       }
+                       case REAL:
+                       {
+                           returnValue = ((Double)field.eval(tuple1)).compareTo((Double)field.eval(tuple2));
+                           break;
+                       }
+                       case BOOLEAN:
+                       {
+                           returnValue = ((Boolean)field.eval(tuple1)).compareTo((Boolean)field.eval(tuple2));
+                           break;
+                       }
+                       case ARRAY:
+                       {
+                           break;
+                       }
+                       case STRUCT:
+                       {
+                           break;
+                       }
+
+                   }
+                   if(returnValue!=0){
+                       return returnValue;
+                   }
+                }
+                return 0;
+            });
+        }
+
+
 
     }
 
-    //TODO:Gift-shiva: In memory sort, have an array of sorted tuples.next returns the new value from sorted array(?)
     @Override
     public Tuple next() {
-        // TODO Auto-generated method stub
+        Tuple next = sortedTuples.get(nextTuple);
+        nextTuple++;
+        return next;
 
-        return null;
     }
 
     @Override
@@ -42,5 +90,6 @@ public class SortOperator extends UnaryOperator<LogicalSort> {
         sb.append("  ");
         sb.append(order);
     }
+
 
 }

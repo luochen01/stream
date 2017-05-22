@@ -1,11 +1,10 @@
 package edu.uci.asterix.stream.execution;
 
 import java.util.Arrays;
-
 import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.utils.Assertion;
 
-public class Tuple {
+public class Tuple{
 
     public static Tuple merge(Tuple left, Tuple right, StructType resultSchema) {
         Object[] values = new Object[left.values.length + right.values.length];
@@ -50,6 +49,10 @@ public class Tuple {
         return values;
     }
 
+    public StructType getSchema(){
+        return schema;
+    }
+
     @Override
     public String toString() {
         return Arrays.toString(values);
@@ -62,6 +65,8 @@ public class Tuple {
         result = prime * result + Arrays.hashCode(values);
         return result;
     }
+
+
 
     @Override
     public boolean equals(Object obj) {
@@ -76,5 +81,6 @@ public class Tuple {
             return false;
         return true;
     }
+
 
 }
