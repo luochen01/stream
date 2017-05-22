@@ -1,45 +1,43 @@
 package edu.uci.asterix.stream.execution.operators;
 
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.logic.EqualTo;
-import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.logical.LogicalJoin;
 import edu.uci.asterix.stream.utils.Assertion;
-
-import java.util.*;
 
 public class HashJoinOperator extends BinaryOperator<LogicalJoin> {
 
     protected final EqualTo condition;
-    protected Map<Integer,List<Tuple>> leftHash = new Hashtable<>();
+    protected Map<Object, List<Tuple>> leftHash = new Hashtable<>();
 
     private Iterator<Tuple> leftItr;
 
     private Tuple rightTuple;
-
-    private StructType schema;
 
     //TODO: load left table into memory in chunks
     public HashJoinOperator(Operator left, Operator right, LogicalJoin logicalJoin) {
         super(left, right, logicalJoin);
         Assertion.asserts(logicalJoin.isEquiJoin());
         this.condition = (EqualTo) logicalJoin.getJoinCondition();
-        this.schema = logicalJoin.getSchema();
 
-
-        Tuple nextChild;
-        while((nextChild=left.next())!=null){
-            List<Tuple> leftTuples;
-            String conditionField = condition.toField().getFieldName();
-            int fieldIndex = schema.getFieldIndex(conditionField);
-            int leftKey = nextChild.get(fieldIndex).hashCode();
-
-            if((leftTuples =leftHash.get(leftKey))==null){
-                leftTuples = new ArrayList<>();
+        Tuple nextChild = null;
+        while ((nextChild = left.next()) != null) {
+            Object leftValue = condition.getLeft().eval(nextChild);
+            if (leftValue != null) {
+                //we should ignore null values
+                List<Tuple> tuples = leftHash.get(leftValue);
+                if (tuples == null) {
+                    tuples = new ArrayList<Tuple>();
+                    leftHash.put(leftValue, tuples);
+                }
+                tuples.add(nextChild);
             }
-            leftTuples.add(nextChild);
-            leftHash.put(leftKey,leftTuples);
-
         }
 
     }
@@ -56,32 +54,24 @@ public class HashJoinOperator extends BinaryOperator<LogicalJoin> {
 
     @Override
     public Tuple next() {
-        // TODO Auto-generated method stub
-
         //Return merge tuple of left+right
-        while (leftItr.hasNext()){
-            List<Object> mergeTuple = new ArrayList<>();
-            mergeTuple.addAll(Arrays.asList(leftItr.next().getAllValues()));
-            mergeTuple.addAll(Arrays.asList(rightTuple.getAllValues()));
-            return new Tuple(schema, mergeTuple.toArray());
+        while (leftItr != null && leftItr.hasNext()) {
+            return Tuple.merge(leftItr.next(), rightTuple, getSchema());
         }
 
         //exhaust all entries on left -> get next right & reinitialize left array
-        while((rightTuple = right.next())!=null){
-            List<Tuple> leftTuples;
-            String conditionField = condition.toField().getFieldName();
-            int fieldIndex = schema.getFieldIndex(conditionField);
-            int rightKey = rightTuple.get(fieldIndex).hashCode();
-
-            if((leftTuples =leftHash.get(rightKey)) != null){
-                leftItr = leftTuples.iterator();
-
-                List<Object> mergeTuple = new ArrayList<>();
-                mergeTuple.addAll(Arrays.asList(leftItr.next().getAllValues()));
-                mergeTuple.addAll(Arrays.asList(rightTuple.getAllValues()));
-                return new Tuple(schema, mergeTuple.toArray());
+        while ((rightTuple = right.next()) != null) {
+            Object rightValue = condition.getRight().eval(rightTuple);
+            if (rightValue == null) {
+                continue;
             }
-
+            List<Tuple> leftList = leftHash.get(rightValue);
+            if (leftList != null) {
+                leftItr = leftList.iterator();
+                if (leftItr.hasNext()) {
+                    return Tuple.merge(leftItr.next(), rightTuple, getSchema());
+                }
+            }
         }
         return null;
     }

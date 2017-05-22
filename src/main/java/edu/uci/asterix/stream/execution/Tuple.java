@@ -7,6 +7,18 @@ import edu.uci.asterix.stream.utils.Assertion;
 
 public class Tuple {
 
+    public static Tuple merge(Tuple left, Tuple right, StructType resultSchema) {
+        Object[] values = new Object[left.values.length + right.values.length];
+        int index = 0;
+        for (Object value : left.values) {
+            values[index++] = value;
+        }
+        for (Object value : right.values) {
+            values[index++] = value;
+        }
+        return new Tuple(resultSchema, values);
+    }
+
     private final Object[] values;
 
     private final StructType schema;
