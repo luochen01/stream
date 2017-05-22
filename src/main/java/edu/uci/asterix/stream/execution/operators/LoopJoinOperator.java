@@ -8,18 +8,28 @@ import edu.uci.asterix.stream.logical.LogicalJoin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class LoopJoinOperator extends BinaryOperator<LogicalJoin> {
 
     protected final LogicExpr condition;
     protected final LogicalJoin logicalJoin;
+    private List<Tuple> leftList;
+    private Iterator<Tuple> leftItr;
     //Keep left in the list, iterate through right
 
     public LoopJoinOperator(Operator left, Operator right, LogicalJoin logicalJoin) {
         super(left, right, logicalJoin);
         this.condition = logicalJoin.getJoinCondition();
         this.logicalJoin = logicalJoin;
+        this.leftList = new ArrayList<>();
+
+        Tuple leftTuple;
+        while((leftTuple = left.next()) != null){
+            leftList.add(leftTuple);
+        }
+        leftItr = leftList.iterator();
     }
 
     @Override public String getName() {
@@ -32,12 +42,13 @@ public class LoopJoinOperator extends BinaryOperator<LogicalJoin> {
     }
 
     @Override public Tuple next() {
-        Tuple leftChild;
-        while ((leftChild = left.next()) != null) {
-            Tuple rightChild = null;
-            while ((rightChild = right.next()) != null) {
+        Tuple rightChild;
+        while ((rightChild = right.next()) != null) {
+
+            while (leftItr.hasNext()) {
+                Tuple leftTuple = leftItr.next();
                 List<Object> fields = new ArrayList<>();
-                fields.addAll(Arrays.asList(leftChild.getAllValues()));
+                fields.addAll(Arrays.asList(leftTuple.getAllValues()));
                 fields.addAll(Arrays.asList(rightChild.getAllValues()));
                 Tuple concat = new Tuple(logicalJoin.getSchema(), fields.toArray());
                 if ((boolean) condition.eval(concat)) {

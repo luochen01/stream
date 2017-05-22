@@ -14,7 +14,7 @@ public class HashJoinOperator extends BinaryOperator<LogicalJoin> {
     protected Map<Integer,List<Tuple>> leftHash = new Hashtable<>();
 
     private Iterator<Tuple> leftItr;
-    private int currentLeftKey;
+
     private Tuple rightTuple;
 
     private StructType schema;
@@ -63,7 +63,7 @@ public class HashJoinOperator extends BinaryOperator<LogicalJoin> {
             List<Object> mergeTuple = new ArrayList<>();
             mergeTuple.addAll(Arrays.asList(leftItr.next().getAllValues()));
             mergeTuple.addAll(Arrays.asList(rightTuple.getAllValues()));
-            return new Tuple(logicalPlan.getSchema(), mergeTuple.toArray());
+            return new Tuple(schema, mergeTuple.toArray());
         }
 
         //exhaust all entries on left -> get next right & reinitialize left array
@@ -79,7 +79,7 @@ public class HashJoinOperator extends BinaryOperator<LogicalJoin> {
                 List<Object> mergeTuple = new ArrayList<>();
                 mergeTuple.addAll(Arrays.asList(leftItr.next().getAllValues()));
                 mergeTuple.addAll(Arrays.asList(rightTuple.getAllValues()));
-                return new Tuple(logicalPlan.getSchema(), mergeTuple.toArray());
+                return new Tuple(schema, mergeTuple.toArray());
             }
 
         }
