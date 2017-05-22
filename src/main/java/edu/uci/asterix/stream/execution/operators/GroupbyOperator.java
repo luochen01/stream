@@ -5,7 +5,7 @@ import java.util.*;
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.expr.aggr.AggregateExpr;
-import edu.uci.asterix.stream.field.Field;
+import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.logical.LogicalGroupby;
 import edu.uci.asterix.stream.utils.Utils;
 
@@ -16,49 +16,70 @@ public class GroupbyOperator extends UnaryOperator<LogicalGroupby> {
     //e.g., count(*) as count
     protected final List<AggregateExpr> aggregateExprs;
 
-    private Map<List<Object>, Object>groups = new HashMap<>();
-    //TODO:Gift-shiva -each eval works on it's operator and returns based on that. read the comments from chen. We need to implement aggregate. Aggregation should be done on the fly based on aggregation type(make a map<List<Object>,int/double>
+    private Iterator<Object[]> iterator;
+
+    private Map<Object[], Tuple>groups = new HashMap<>();
+
+
     public GroupbyOperator(Operator child, LogicalGroupby logicalGroupby) {
         super(child, logicalGroupby);
         this.byFields = logicalGroupby.getByFields();
         this.aggregateExprs = logicalGroupby.getAggregateExprs();
 
+        StructType currentSchema = logicalGroupby.getSchema();
+        StructType childSchema = child.getSchema();
+        Object[] groupValues = new Object[currentSchema.getFields().size()];
+        Object[] key = new Object[byFields.size()];
+
         Tuple tuple;
-        while((tuple = child.next()) != null)
-        {
-            List<Object> key = new LinkedList<>();
-            for(Expr expr: byFields)
-            {
-                key.add(expr.eval(tuple));
+
+        while((tuple = child.next()) != null) {
+
+            //Get key using byFields
+
+            for(Expr expr: byFields) {
+
+                String byFieldName = expr.toField().getFieldName();
+                int byFieldPosition = currentSchema.getFieldIndex(byFieldName);
+                groupValues[byFieldPosition] = tuple.get(childSchema.getFieldIndex(byFieldName));
+
+                key[byFieldPosition] = expr.eval(tuple);
+
             }
-            Object groupValues = groups.get(key);
-            if(groupValues != null)
-            {
-                groupValues = (double) groupValues +1;
-                groups.put(key, groupValues);
+
+            //Get aggregate values
+            Tuple groupKey = groups.get(key);
+
+
+            if(groupKey != null) {
+                groupValues = groupKey.getAllValues();
+                for(AggregateExpr agg:aggregateExprs) {
+                    int currentPosition = logicalGroupby.getSchema().getFieldIndex(agg.toField().getFieldName());
+                    Object currentValue = groupValues[currentPosition];
+                    groupValues[currentPosition] = agg.compute(key, currentValue,tuple);
+                }
             }
-            else{
-                double value=0;
-                groups.put(key, value);
+            else {
+                for(AggregateExpr agg:aggregateExprs) {
+                    int currentPosition = logicalGroupby.getSchema().getFieldIndex(agg.toField().getFieldName());
+                    groupValues[currentPosition] = agg.compute(key,null,tuple);
+                }
             }
+
+            Tuple newTuple = new Tuple(currentSchema, groupValues);
+            groups.put(key, newTuple);
 
         }
-
-//        for(AggregateExpr agexpr:aggregateExprs)
-//        {
-//            for(String key :groups.keySet()){
-//                List<Tuple> tuples = groups.get(key);
-//                for(Tuple t: tuples){
-//                    //TODO:Check the correctness
-//                   agexpr.eval(t);
-//                }
-//            }
-//        }
+        iterator = groups.keySet().iterator();
 
     }
 
     @Override
-    public Tuple next() {
+    public Tuple next()
+    {
+        if(iterator.hasNext()) {
+            return groups.get(iterator.next());
+        }
         return null;
     }
 

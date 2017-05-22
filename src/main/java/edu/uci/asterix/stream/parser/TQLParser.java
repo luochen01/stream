@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.uci.asterix.stream.parser.gen.TQLBaseVisitor;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -77,7 +78,7 @@ import edu.uci.asterix.stream.logical.LogicalTableScan;
 import edu.uci.asterix.stream.logical.analyzer.CNFNormalizer;
 import edu.uci.asterix.stream.logical.analyzer.IdentifyAggregateExprs;
 import edu.uci.asterix.stream.logical.analyzer.IdentifyJoinConditions;
-import edu.uci.asterix.stream.parser.gen.TQLBaseVisitor;
+
 import edu.uci.asterix.stream.parser.gen.TQLLexer;
 import edu.uci.asterix.stream.parser.gen.TQLParser.AggrContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.AndContext;

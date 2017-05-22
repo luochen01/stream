@@ -4,6 +4,8 @@ import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.expr.UnaryExpr;
 
+import java.util.List;
+
 public abstract class AggregateExpr extends UnaryExpr<Expr> {
 
     public AggregateExpr(String symbol, Expr child) {
@@ -21,4 +23,8 @@ public abstract class AggregateExpr extends UnaryExpr<Expr> {
         return symbol + "(" + child + ")";
     }
 
+
+    public Object compute(Object[] key, Object currentValue, Tuple input){
+        throw new UnsupportedOperationException();
+    };
 }
