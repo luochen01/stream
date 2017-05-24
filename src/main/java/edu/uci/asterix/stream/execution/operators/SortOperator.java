@@ -13,7 +13,7 @@ public class SortOperator extends UnaryOperator<LogicalSort> {
     protected final List<Expr> sortFields;
     protected final SortOrder order;
     private Iterator<Tuple> itr;
-    List<Tuple> sortedTuples;
+    private  List<Tuple> sortedTuples;
 
     public SortOperator(Operator child, LogicalSort logicalSort) {
         super(child, logicalSort);
@@ -26,27 +26,27 @@ public class SortOperator extends UnaryOperator<LogicalSort> {
         }
         if (sortedTuples.size() > 0) {
             Collections.sort(sortedTuples, (tuple1, tuple2) -> {
-                int returnValue = 0;
+                int returnValue = 0; int diff = 0;
                 for(Expr field: sortFields){
                    switch (field.getResultType().getFieldTypeName()){
                        case INTEGER:
                        {
-                           returnValue = (int)field.eval(tuple1) - (int)field.eval(tuple2);
-                           break;
+                            diff = (int)field.eval(tuple1) - (int)field.eval(tuple2);
+                            break;
                        }
                        case STRING:
                        {
-                           returnValue = ((String) field.eval(tuple1)).compareTo((String) field.eval(tuple2));
+                           diff = ((String) field.eval(tuple1)).compareTo((String) field.eval(tuple2));
                            break;
                        }
                        case REAL:
                        {
-                           returnValue = ((Double)field.eval(tuple1)).compareTo((Double)field.eval(tuple2));
+                           diff = ((Double)field.eval(tuple1)).compareTo((Double)field.eval(tuple2));
                            break;
                        }
                        case BOOLEAN:
                        {
-                           returnValue = ((Boolean)field.eval(tuple1)).compareTo((Boolean)field.eval(tuple2));
+                          diff = ((Boolean)field.eval(tuple1)).compareTo((Boolean)field.eval(tuple2));
                            break;
                        }
                        case ARRAY:
@@ -59,6 +59,7 @@ public class SortOperator extends UnaryOperator<LogicalSort> {
                        }
 
                    }
+                    returnValue = order.equals(SortOrder.Desc)?-diff:diff;
                    if(returnValue!=0){
                        return returnValue;
                    }
