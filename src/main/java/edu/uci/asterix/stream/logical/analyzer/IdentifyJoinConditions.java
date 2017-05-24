@@ -12,6 +12,7 @@ import edu.uci.asterix.stream.expr.fields.FieldAccess;
 import edu.uci.asterix.stream.expr.logic.And;
 import edu.uci.asterix.stream.expr.logic.BinaryPredicateExpr;
 import edu.uci.asterix.stream.expr.logic.EqualTo;
+import edu.uci.asterix.stream.expr.logic.In;
 import edu.uci.asterix.stream.expr.logic.LogicExpr;
 import edu.uci.asterix.stream.expr.logic.Or;
 import edu.uci.asterix.stream.expr.logic.PredicateExpr;
@@ -28,6 +29,7 @@ public class IdentifyJoinConditions implements LogicalPlanAnalyzer {
 
     private LogicExpr resultFilterCondition;
 
+    @Override
     public LogicalPlan analyze(LogicalPlan plan) {
         if (!(plan instanceof LogicalFilter)) {
             return plan;
@@ -55,7 +57,11 @@ public class IdentifyJoinConditions implements LogicalPlanAnalyzer {
         if (joinCondition == True.INSTANCE) {
             LOGGER.warn("Fail to identify join condition for " + join);
         }
-        return new LogicalJoin(left, right, joinCondition, identify.isEquiJoin());
+        if (identify.isNeedExchange()) {
+            return new LogicalJoin(right, left, joinCondition, identify.isEquiJoin());
+        } else {
+            return new LogicalJoin(left, right, joinCondition, identify.isEquiJoin());
+        }
     }
 
     private class IdentifyJoinCondition {
@@ -73,10 +79,11 @@ public class IdentifyJoinConditions implements LogicalPlanAnalyzer {
 
         private boolean equiJoin = false;
 
-        private List<LogicExpr> results = new ArrayList<>();
+        private boolean needExchange = false;
 
-        private List<EqualTo> equis = new ArrayList<>();
-        private List<EqualTo> originalEquis = new ArrayList<>();
+        private final List<LogicExpr> results = new ArrayList<>();
+
+        private BinaryPredicateExpr equalCondition = null;
 
         public IdentifyJoinCondition(LogicalJoin join, LogicExpr filterExpr) {
             this.filterExpr = filterExpr;
@@ -91,10 +98,10 @@ public class IdentifyJoinConditions implements LogicalPlanAnalyzer {
             traverse(filterExpr);
             //build up join condition
             List<LogicExpr> simpliedExprs = new ArrayList<>();
-            if (!equis.isEmpty()) {
-                joinCondition = equis.get(0);
+            if (equalCondition != null) {
+                joinCondition = equalCondition;
                 equiJoin = true;
-                simpliedExprs.add(originalEquis.get(0));
+                simpliedExprs.add(equalCondition);
             } else {
                 equiJoin = false;
                 joinCondition = And.create(results);
@@ -105,6 +112,10 @@ public class IdentifyJoinConditions implements LogicalPlanAnalyzer {
                 simplifiedExpr = True.INSTANCE;
             }
 
+        }
+
+        public boolean isNeedExchange() {
+            return needExchange;
         }
 
         public LogicExpr getSimplifiedExpr() {
@@ -126,8 +137,8 @@ public class IdentifyJoinConditions implements LogicalPlanAnalyzer {
                 traverse(and.getRight());
             } else if (expr instanceof Or) {
                 List<PredicateExpr> predicates = Exprs.collect(expr, PredicateExpr.class);
-                if (predicates.stream().allMatch(pred -> checkPredicate((PredicateExpr) pred) != null)) {
-                    //add or 
+                if (predicates.stream().allMatch(pred -> checkPredicate(pred) != null)) {
+                    //add or
                     results.add(expr);
                 }
 
@@ -136,10 +147,8 @@ public class IdentifyJoinConditions implements LogicalPlanAnalyzer {
                 PredicateExpr resultPred = checkPredicate((PredicateExpr) expr);
                 if (resultPred != null) {
                     results.add(resultPred);
-                    EqualTo equiCondition = checkEquiCondition((PredicateExpr) expr);
-                    if (equiCondition != null) {
-                        equis.add(equiCondition);
-                        originalEquis.add((EqualTo) expr);
+                    if (equalCondition == null && checkEquiCondition((PredicateExpr) expr)) {
+                        equalCondition = (BinaryPredicateExpr) expr;
                     }
                 }
             } else {
@@ -155,7 +164,7 @@ public class IdentifyJoinConditions implements LogicalPlanAnalyzer {
                         .collect(Collectors.toList());
                 boolean intersects = intersects(fields, leftSchema) && intersects(fields, rightSchema);
                 boolean solvable = intersects && allFields.containsAll(fields);
-                //the fields in the condition need to access both left and right schemas, and is evaluatble 
+                //the fields in the condition need to access both left and right schemas, and is evaluatble
                 if (solvable) {
                     return comp;
                 }
@@ -163,9 +172,9 @@ public class IdentifyJoinConditions implements LogicalPlanAnalyzer {
             return null;
         }
 
-        private EqualTo checkEquiCondition(PredicateExpr predicate) {
-            if (predicate instanceof EqualTo) {
-                EqualTo equalTo = (EqualTo) predicate;
+        private boolean checkEquiCondition(PredicateExpr predicate) {
+            if (predicate instanceof EqualTo || predicate instanceof In) {
+                BinaryPredicateExpr equalTo = (BinaryPredicateExpr) predicate;
                 List<Field> leftFields = Exprs.collect(equalTo.getLeft(), FieldAccess.class).stream()
                         .map(access -> access.toField()).collect(Collectors.toList());
                 List<Field> rightFields = Exprs.collect(equalTo.getRight(), FieldAccess.class).stream()
@@ -174,15 +183,16 @@ public class IdentifyJoinConditions implements LogicalPlanAnalyzer {
                 boolean leftMatchLeft = intersects(leftFields, leftSchema) && !intersects(leftFields, rightSchema);
                 boolean rightMatchRight = intersects(rightFields, rightSchema) && !intersects(rightFields, leftSchema);
                 if (leftMatchLeft && rightMatchRight) {
-                    return equalTo;
+                    return true;
                 }
                 boolean leftMatchRight = intersects(leftFields, rightSchema) && !intersects(leftFields, leftSchema);
                 boolean rightMatchLeft = intersects(rightFields, leftSchema) && !intersects(rightFields, rightSchema);
                 if (leftMatchRight && rightMatchLeft) {
-                    return new EqualTo(equalTo.getRight(), equalTo.getLeft());
+                    needExchange = true;
+                    return true;
                 }
             }
-            return null;
+            return false;
         }
 
         private LogicExpr simplify(LogicExpr expr, List<LogicExpr> simplifiedExprs) {

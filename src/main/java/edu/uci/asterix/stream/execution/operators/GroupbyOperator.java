@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Expr;
@@ -18,9 +19,9 @@ public class GroupbyOperator extends UnaryOperator<LogicalGroupby> {
     //e.g., count(*) as count
     protected final List<AggregateExpr> aggregateExprs;
 
-    private Iterator<Object[]> iterator;
+    private Iterator<Entry<Object[], Object[]>> iterator;
 
-    private Map<Object[], Object[]> groups = new HashMap<>();
+    private Map<Object[], Object[]> groups;
 
     public GroupbyOperator(Operator child, LogicalGroupby logicalGroupby) {
         super(child, logicalGroupby);
@@ -31,11 +32,12 @@ public class GroupbyOperator extends UnaryOperator<LogicalGroupby> {
 
     @Override
     public Tuple next() {
-        if (iterator.hasNext()) {
-            Object[] byFields = iterator.next();
-            Object[] aggValues = groups.get(byFields);
+        if (iterator != null && iterator.hasNext()) {
+            Entry<Object[], Object[]> e = iterator.next();
+            Object[] byFields = e.getKey();
+            Object[] aggValues = e.getValue();
 
-            Object[] mergedValues = new Object[byFields.length+aggValues.length];
+            Object[] mergedValues = new Object[byFields.length + aggValues.length];
             int index = 0;
             for (Object value : byFields) {
                 mergedValues[index++] = value;
@@ -57,6 +59,7 @@ public class GroupbyOperator extends UnaryOperator<LogicalGroupby> {
     public void initialize() {
         super.initialize();
 
+        this.groups = new HashMap<>();
         Object[] key = new Object[byFields.size()];
         Object[] aggValues = new Object[aggregateExprs.size()];
 
@@ -92,7 +95,7 @@ public class GroupbyOperator extends UnaryOperator<LogicalGroupby> {
             groups.put(key, aggValues);
 
         }
-        iterator = groups.keySet().iterator();
+        iterator = groups.entrySet().iterator();
     }
 
     @Override

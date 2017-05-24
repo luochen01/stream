@@ -7,6 +7,7 @@ import edu.uci.asterix.stream.expr.arithm.Add;
 import edu.uci.asterix.stream.expr.fields.StructGetField;
 import edu.uci.asterix.stream.expr.logic.And;
 import edu.uci.asterix.stream.expr.logic.EqualTo;
+import edu.uci.asterix.stream.expr.logic.In;
 import edu.uci.asterix.stream.expr.logic.LogicExpr;
 import edu.uci.asterix.stream.expr.logic.Or;
 import edu.uci.asterix.stream.expr.logic.True;
@@ -34,8 +35,9 @@ public class IdentifyJoinConditionsTest extends LogicalPlanAnalyzerTest {
     }
 
     @Test
-    public void testCommuteEqui() {
-        LogicExpr filterExpr = new And(f, new EqualTo(infId, senId));
+    public void testIn() {
+
+        LogicExpr filterExpr = new And(f, new In(senLocation, infGeometry));
         LogicalFilter filter = new LogicalFilter(join, filterExpr);
 
         LogicalPlanAnalyzer identify = new IdentifyJoinConditions();
@@ -44,7 +46,24 @@ public class IdentifyJoinConditionsTest extends LogicalPlanAnalyzerTest {
 
         Assert.assertEquals(leftScan, resultJoin.getLeft());
         Assert.assertEquals(rightScan, resultJoin.getRight());
-        Assert.assertEquals(new EqualTo(senId, infId), resultJoin.getJoinCondition());
+        Assert.assertEquals(new In(senLocation, infGeometry), resultJoin.getJoinCondition());
+        Assert.assertEquals(true, resultJoin.isEquiJoin());
+        Assert.assertEquals(resultFilter.getFilterCondition(), f);
+
+    }
+
+    @Test
+    public void testCommuteEqui() {
+        LogicExpr filterExpr = new And(f, new EqualTo(infId, senId));
+        LogicalFilter filter = new LogicalFilter(join, filterExpr);
+
+        LogicalPlanAnalyzer identify = new IdentifyJoinConditions();
+        LogicalFilter resultFilter = (LogicalFilter) identify.analyze(filter);
+        LogicalJoin resultJoin = (LogicalJoin) resultFilter.getChild();
+
+        Assert.assertEquals(rightScan, resultJoin.getLeft());
+        Assert.assertEquals(leftScan, resultJoin.getRight());
+        Assert.assertEquals(new EqualTo(infId, senId), resultJoin.getJoinCondition());
         Assert.assertEquals(true, resultJoin.isEquiJoin());
         Assert.assertEquals(f, resultFilter.getFilterCondition());
     }
@@ -124,16 +143,16 @@ public class IdentifyJoinConditionsTest extends LogicalPlanAnalyzerTest {
         LogicalFilter resultFilter = (LogicalFilter) identify.analyze(filter);
         LogicalJoin resultJoin = (LogicalJoin) resultFilter.getChild();
 
-        Assert.assertEquals(new EqualTo(senId, sen2Id), resultJoin.getJoinCondition());
+        Assert.assertEquals(new EqualTo(sen2Id, senId), resultJoin.getJoinCondition());
         Assert.assertEquals(true, resultJoin.isEquiJoin());
 
-        LogicalJoin leftJoin = (LogicalJoin) resultJoin.getLeft();
-        Assert.assertEquals(leftScan, leftJoin.getLeft());
-        Assert.assertEquals(rightScan, leftJoin.getRight());
-        Assert.assertEquals(true, leftJoin.isEquiJoin());
-        Assert.assertEquals(new EqualTo(senId, infId), leftJoin.getJoinCondition());
+        LogicalJoin rightJoin = (LogicalJoin) resultJoin.getRight();
+        Assert.assertEquals(leftScan, rightJoin.getLeft());
+        Assert.assertEquals(rightScan, rightJoin.getRight());
+        Assert.assertEquals(true, rightJoin.isEquiJoin());
+        Assert.assertEquals(new EqualTo(senId, infId), rightJoin.getJoinCondition());
 
-        Assert.assertEquals(leftScan2, resultJoin.getRight());
+        Assert.assertEquals(leftScan2, resultJoin.getLeft());
 
         Assert.assertEquals(True.INSTANCE, resultFilter.getFilterCondition());
 

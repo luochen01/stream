@@ -40,6 +40,9 @@ public abstract class LogicalPlanAnalyzerTest {
             new StructGetField(new FieldAccess(getRightField("inf.region"), rightScan.getSchema()), "geometry"),
             new Literal(0, FieldTypeName.INTEGER));
 
+    protected Expr infGeometry = new StructGetField(new FieldAccess(getRightField("inf.region"), rightScan.getSchema()),
+            "geometry");
+
     protected LogicExpr t = True.INSTANCE;
     protected LogicExpr f = False.INSTANCE;
 

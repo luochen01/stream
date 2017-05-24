@@ -1,15 +1,5 @@
 package edu.uci.asterix.stream.execution.operators;
 
-
-import edu.uci.asterix.stream.catalog.TableImpl;
-import edu.uci.asterix.stream.execution.Tuple;
-import edu.uci.asterix.stream.field.Field;
-import edu.uci.asterix.stream.logical.LogicalTableScan;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -17,12 +7,23 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import edu.uci.asterix.stream.catalog.TableImpl;
+import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.field.Field;
+import edu.uci.asterix.stream.logical.LogicalTableScan;
+
 public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> {
 
     private final TableImpl table;
 
     private Iterator<JSONObject> items;
-//TODO:GIFT-Shiva: When we read a json object, we should parse it(either here or have another method to parse it) to struct,etc.
+
+    //TODO:GIFT-Shiva: When we read a json object, we should parse it(either here or have another method to parse it) to struct,etc.
     public TableScanOperator(LogicalTableScan logicalScan) {
         super(logicalScan);
         this.table = logicalScan.getTable();
@@ -47,14 +48,13 @@ public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> 
     public Tuple next() {
         // TODO Auto-generated method stub
 
-       JSONObject row = items.next();
-       if(row != null)
-       {
-           List<Object> values = new ArrayList<>();
-           for( Field field:this.getSchema().getFields()) {
-               values.add(row.get(field));
-           }
-           return new Tuple(this.getSchema(), values.toArray());
+        JSONObject row = items.next();
+        if (row != null) {
+            List<Object> values = new ArrayList<>();
+            for (Field field : this.getSchema().getFields()) {
+                values.add(row.get(field));
+            }
+            return new Tuple(this.getSchema(), values.toArray());
         }
         return null;
     }
