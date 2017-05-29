@@ -1,9 +1,6 @@
 package edu.uci.asterix.stream.execution.operators;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.logic.BinaryPredicateExpr;
@@ -49,7 +46,10 @@ public class HashJoinOperator extends BinaryOperator<LogicalJoin> {
         }
         rightIter = null;
         //exhaust all entries on left -> get next right & reinitialize left array
-        while ((leftTuple = right.next()) != null) {
+        while ((leftTuple = left.next()) != null) {
+            if(rightHash == null){
+                return null;
+            }
             Object leftValue = condition.getLeft().eval(leftTuple);
             if (leftValue == null) {
                 continue;
@@ -100,12 +100,18 @@ public class HashJoinOperator extends BinaryOperator<LogicalJoin> {
 
     private void addToHashTable(Object value, Tuple tuple) {
         //we should ignore null values
+        if (rightHash == null)
+        {
+            rightHash = new HashMap<>();
+        }
         List<Tuple> tuples = rightHash.get(value);
         if (tuples == null) {
             tuples = new ArrayList<Tuple>();
-            rightHash.put(value, tuples);
         }
         tuples.add(tuple);
+        rightHash.put(value, tuples);
+
+
     }
 
 }
