@@ -11,14 +11,14 @@ import java.util.List;
 public class Max extends AggregateExpr {
 
     private FieldTypeName resultType;
-    private int fieldID;
+    private String fieldName;
 
     public Max(Expr child) {
         super("MAX", child);
         Assertion.asserts(child.getResultType().getFieldTypeName().isNumerical(),
                 "MAX only applies to numerical field");
         resultType = child.getResultType().getFieldTypeName();
-        fieldID = child.getId();
+        fieldName = child.toField().getFieldName();
 
     }
 
@@ -36,16 +36,18 @@ public class Max extends AggregateExpr {
 
     @Override
     public Object compute(Object[] key, Object currentValue, Tuple input) {
-
+        int id = input.getSchema().getFieldIndex(fieldName);
         if (child.getResultType().getFieldTypeName().isNumerical()) {
             if(resultType == FieldTypeName.INTEGER){
-                if (currentValue == null || (int)input.get(fieldID) > (int)currentValue) {
-                    return input.get(fieldID);
+
+                if (currentValue == null || (int)input.get(id) > (int)currentValue) {
+
+                    return input.get(id);
                 }
             }
             else{
-                if(currentValue == null || (double)input.get(fieldID) > (double)currentValue){
-                    return input.get(fieldID);
+                if(currentValue == null || (double)input.get(id) > (double)currentValue){
+                    return input.get(id);
                 }
             }
             return currentValue;

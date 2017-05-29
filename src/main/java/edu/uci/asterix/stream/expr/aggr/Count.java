@@ -33,6 +33,10 @@ public class Count extends AggregateExpr {
     @Override
     public Object compute(Object[] key, Object currentValue, Tuple input) {
 
+        if(currentValue == null)
+        {
+            return 1;
+        }
         return (int)currentValue+1;
     }
 

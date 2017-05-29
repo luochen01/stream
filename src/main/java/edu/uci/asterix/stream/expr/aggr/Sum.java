@@ -11,7 +11,7 @@ import java.util.List;
 public class Sum extends AggregateExpr {
 
     private FieldTypeName resultType;
-    private int fieldID;
+    private String fieldName;
 
     public Sum(Expr child) {
         super("SUM", child);
@@ -19,7 +19,7 @@ public class Sum extends AggregateExpr {
                 "SUM only applies to numerical field");
 
         resultType = child.getResultType().getFieldTypeName();
-        fieldID = child.getId();
+        fieldName = child.toField().getFieldName();
     }
 
     @Override
@@ -35,18 +35,20 @@ public class Sum extends AggregateExpr {
     @Override
     public Object compute(Object[] key, Object currentValue, Tuple input) {
 
+        int id = input.getSchema().getFieldIndex(fieldName);
+
         if (child.getResultType().getFieldTypeName().isNumerical()) {
             if(resultType == FieldTypeName.INTEGER){
                 if (currentValue == null) {
-                    return input.get(fieldID);
+                    return input.get(id);
                 }
-                return (int)currentValue + (int)input.get(fieldID);
+                return (int)currentValue + (int)input.get(id);
             }
             else{
                 if(currentValue == null ){
-                    return input.get(fieldID);
+                    return input.get(id);
                 }
-                return (double)currentValue + (double)input.get(fieldID);
+                return (double)currentValue + (double)input.get(id);
             }
         }
 
