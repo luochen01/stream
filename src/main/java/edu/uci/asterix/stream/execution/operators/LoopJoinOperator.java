@@ -23,7 +23,7 @@ public class LoopJoinOperator extends BinaryOperator<LogicalJoin> {
      *
      * @author luochen
      */
-    private class PairedTuple extends Tuple {
+    public class PairedTuple extends Tuple {
 
         public Tuple left;
 
@@ -41,6 +41,10 @@ public class LoopJoinOperator extends BinaryOperator<LogicalJoin> {
             } else {
                 return right.get(i - left.getFieldCount());
             }
+        }
+
+        public Tuple toTuple(){
+            return Tuple.merge(left, right, schema);
         }
     }
 
