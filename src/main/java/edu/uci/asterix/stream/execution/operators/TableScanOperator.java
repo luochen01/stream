@@ -4,9 +4,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.uci.asterix.stream.field.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -14,47 +16,33 @@ import org.json.simple.parser.ParseException;
 
 import edu.uci.asterix.stream.catalog.TableImpl;
 import edu.uci.asterix.stream.execution.Tuple;
-import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.logical.LogicalTableScan;
 
 public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> {
 
     private final TableImpl table;
 
-    private Iterator<JSONObject> items;
+    private Iterator items;
 
-    //TODO:GIFT-Shiva: When we read a json object, we should parse it(either here or have another method to parse it) to struct,etc.
+    private StructType schema;
+
     public TableScanOperator(LogicalTableScan logicalScan) {
         super(logicalScan);
         this.table = logicalScan.getTable();
-
-        try {
-            FileReader fileReader = new FileReader(table.getTablePath());
-            JSONParser parser = new JSONParser();
-            JSONObject table = (JSONObject) parser.parse(fileReader);
-            JSONArray rows = (JSONArray) table.get("rows");
-            items = rows.iterator();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.schema = table.getSchema();
     }
 
     @Override
     public Tuple next() {
         // TODO Auto-generated method stub
 
-        JSONObject row = items.next();
-        if (row != null) {
+        JSONObject row;
+        Object obj;
+        if(items.hasNext()&& (obj = items.next()) != null){
+            row = (JSONObject) obj;
             List<Object> values = new ArrayList<>();
-            for (Field field : this.getSchema().getFields()) {
-                values.add(row.get(field));
-            }
-            return new Tuple(this.getSchema(), values.toArray());
+            values.addAll(Arrays.asList(parseJson(row, table.getSchema())));
+            return new Tuple(schema, values.toArray());
         }
         return null;
     }
@@ -76,6 +64,92 @@ public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> 
             sb.append(" AS ");
             sb.append(logicalPlan.getAlias());
         }
+    }
+
+    private Object[] parseJson(JSONObject row, StructType schema){
+
+        List<Object> values = new ArrayList<>();
+
+
+        for (Field f : schema.getFields()) {
+
+            switch (f.getFieldType().getFieldTypeName()) {
+                case BOOLEAN:
+                case INTEGER:
+                case REAL:
+                case STRING:{
+                    Object obj;
+                    if((obj = row.get(f.getFieldName())) != null){
+                        values.add(obj.toString());
+                    }
+                    else{
+                        values.add(null);
+                    }
+                    break;
+                }
+                case STRUCT: {
+                    Object obj;
+                    if((obj = row.get(f.getFieldName())) != null){
+                        JSONObject struct = (JSONObject) obj;
+                        Object[] structValue = parseJson(struct, new StructType(f.getFieldType().getFields()));
+                        values.add(structValue);
+                    }
+                    else{
+                        values.add(null);
+                    }
+                    break;
+                }
+                case ARRAY: {
+                    FieldType elementType = f.getFieldType().getElementType();
+
+                    Object obj;
+                    List<Object> retArray = new ArrayList<>();
+                    if((obj = row.get(f.getFieldName())) != null){
+                        JSONArray array = (JSONArray)obj;
+                        if(array != null && array.size() > 0){
+                            array.forEach((item) -> retArray.add(parseJson((JSONObject) item, new StructType(elementType.getFields()))));
+
+                        }
+                        values.add(retArray.toArray());
+                    }
+                    else{
+                        values.add(null);
+                    }
+
+                    break;
+                }
+
+                default:
+                    throw new UnsupportedOperationException(
+                            "Field type is not supported on " + f.getFieldName());
+            }
+        }
+
+
+        return values.toArray();
+    }
+
+    @Override
+    public void initialize(){
+        try {
+            FileReader fileReader = new FileReader(table.getTablePath());
+            JSONParser parser = new JSONParser();
+            JSONObject table = (JSONObject) parser.parse(fileReader);
+            JSONArray rows = (JSONArray) table.get("rows");
+            items = rows.iterator();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+
+        items = null;
+        schema = null;
+
     }
 
 }
