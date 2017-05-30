@@ -98,7 +98,7 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
     public Tuple next() {
         if (needSleep) {
             sleep();
-            reset();
+            internalReset();
         }
 
         while (iterator.hasNext()) {
