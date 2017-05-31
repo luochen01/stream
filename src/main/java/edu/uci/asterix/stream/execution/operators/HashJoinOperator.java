@@ -1,6 +1,7 @@
 package edu.uci.asterix.stream.execution.operators;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,8 +50,13 @@ public class HashJoinOperator extends BinaryOperator<LogicalJoin> {
         }
         rightIter = null;
         //exhaust all entries on left -> get next right & reinitialize left array
-        while ((leftTuple = right.next()) != null) {
-            Object leftValue = condition.getLeft().eval(leftTuple);
+        while ((leftTuple = left.next()) != null) {
+            if (rightHash == null) {
+                return null;
+            }
+            joinedTuple.left = leftTuple;
+            joinedTuple.right = null;
+            Object leftValue = condition.getLeft().eval(joinedTuple);
             if (leftValue == null) {
                 continue;
             }
@@ -82,7 +88,9 @@ public class HashJoinOperator extends BinaryOperator<LogicalJoin> {
 
         Tuple rightTuple = null;
         while ((rightTuple = right.next()) != null) {
-            Object rightValue = condition.getRight().eval(rightTuple);
+            joinedTuple.left = null;
+            joinedTuple.right = rightTuple;
+            Object rightValue = condition.getRight().eval(joinedTuple);
             if (rightValue == null) {
                 continue;
             }
@@ -100,12 +108,16 @@ public class HashJoinOperator extends BinaryOperator<LogicalJoin> {
 
     private void addToHashTable(Object value, Tuple tuple) {
         //we should ignore null values
+        if (rightHash == null) {
+            rightHash = new HashMap<>();
+        }
         List<Tuple> tuples = rightHash.get(value);
         if (tuples == null) {
             tuples = new ArrayList<Tuple>();
-            rightHash.put(value, tuples);
         }
         tuples.add(tuple);
+        rightHash.put(value, tuples);
+
     }
 
 }

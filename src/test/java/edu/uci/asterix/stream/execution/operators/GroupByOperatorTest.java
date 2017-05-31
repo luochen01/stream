@@ -149,9 +149,9 @@ public class GroupByOperatorTest extends LogicalPlanAnalyzerTest {
 
 
 
-    private Tuple getTuple(int id, int number) {
+    private Tuple getTuple(int field1, int field2) {
 
-        return new Tuple(byFieldSchema, new Object[] { id, number});
+        return new Tuple(byFieldSchema, new Object[] { field1, field2});
     }
 
     private Tuple getTuple(int id, double number) {
@@ -160,14 +160,14 @@ public class GroupByOperatorTest extends LogicalPlanAnalyzerTest {
     }
 
 
-    private Tuple getResultTuple(int number, int count) {
+    private Tuple getResultTuple(int field1, int field2) {
 
-        return new Tuple(testSchema, new Object[] { number, count });
+        return new Tuple(testSchema, new Object[] { field1, field2 });
     }
 
-    private Tuple getResultTuple(int number, double count) {
+    private Tuple getResultTuple(int field1, double field2) {
 
-        return new Tuple(testSchema, new Object[] { number, count });
+        return new Tuple(testSchema, new Object[] { field1, field2 });
     }
 
     private LogicalGroupby mockLogicalGroupBy(List<AggregateExpr> exprs, StructType schema) {
@@ -175,16 +175,6 @@ public class GroupByOperatorTest extends LogicalPlanAnalyzerTest {
         Mockito.when(groupby.getAggregateExprs()).thenReturn(exprs);
         Mockito.when(groupby.getByFields()).thenReturn(byFields);
         Mockito.when(groupby.getSchema()).thenReturn(schema);
-        return groupby;
-    }
-
-    private LogicalTableScan mockLogicalTableScan() {
-        LogicalTableScan groupby = Mockito.mock(LogicalTableScan.class);
-        TableImpl t = new TableImpl("test");
-        Mockito.when(groupby.getTable()).thenReturn(t);
-
-
-        Mockito.when(t.getTablePath()).thenReturn("test/resources/test.tql");
         return groupby;
     }
 
