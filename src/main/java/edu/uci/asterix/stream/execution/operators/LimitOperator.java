@@ -40,19 +40,11 @@ public class LimitOperator extends UnaryOperator<LogicalLimit> {
 
     @Override
     public Tuple next() {
-        Tuple tuple = null;
-
-        while (position < offset) {
-            position++;
-            tuple = child.next();
-
-        }
-        while (count < limit) {
-            tuple = child.next();
+        Tuple tuple = child.next();
+        if (count < limit && tuple!=null) {
             count++;
             return tuple;
         }
-
         return null;
     }
 
@@ -61,6 +53,15 @@ public class LimitOperator extends UnaryOperator<LogicalLimit> {
         super.initialize();
         this.position = 0;
         this.count = 0;
+        Tuple tuple;
+        if (offset >=0 && limit>= 0) {
+            while (position < offset) {
+                position++;
+                tuple = child.next();
+
+            }
+        }
+        else throw  new UnsupportedOperationException();
     }
 
     @Override

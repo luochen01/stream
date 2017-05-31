@@ -1,15 +1,15 @@
 package edu.uci.asterix.stream.execution.operators;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.expr.SortOrder;
 import edu.uci.asterix.stream.logical.LogicalSort;
 import edu.uci.asterix.stream.utils.Utils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 public class SortOperator extends UnaryOperator<LogicalSort> {
     protected final List<Expr> sortFields;
@@ -55,7 +55,7 @@ public class SortOperator extends UnaryOperator<LogicalSort> {
     @Override
     public void initialize() {
         super.initialize();
-        this.sortedTuples = new ArrayList<Tuple>();
+        this.sortedTuples = new ArrayList<>();
         Tuple tuple;
         while ((tuple = child.next()) != null) {
             sortedTuples.add(tuple);
