@@ -1,31 +1,24 @@
 package edu.uci.asterix.stream.execution.operators;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import edu.uci.asterix.stream.field.*;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import java.io.InputStream;
 
 import edu.uci.asterix.stream.catalog.TableImpl;
+import edu.uci.asterix.stream.exception.StreamExecutionException;
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.execution.reader.ITupleReader;
+import edu.uci.asterix.stream.execution.reader.TupleReaderProvider;
+import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.logical.LogicalTableScan;
 
 public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> {
 
     private final TableImpl table;
 
-    private Iterator items;
+    private final StructType schema;
 
-    private StructType schema;
+    private ITupleReader reader;
 
     public TableScanOperator(LogicalTableScan logicalScan) {
         super(logicalScan);
@@ -35,17 +28,15 @@ public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> 
 
     @Override
     public Tuple next() {
-        // TODO Auto-generated method stub
-
-        JSONObject row;
-        Object obj;
-        if(items.hasNext()&& (obj = items.next()) != null){
-            row = (JSONObject) obj;
-            List<Object> values = new ArrayList<>();
-            values.addAll(Arrays.asList(parseJson(row, table.getSchema())));
-            return new Tuple(schema, values.toArray());
+        Tuple tuple = reader.nextTuple();
+        if (tuple == null) {
+            try {
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        return null;
+        return tuple;
     }
 
     @Override
@@ -67,108 +58,20 @@ public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> 
         }
     }
 
-    private Object[] parseJson(JSONObject row, StructType schema){
-
-        List<Object> values = new ArrayList<>();
-        Object obj;
-
-        for (Field f : schema.getFields()) {
-
-            switch (f.getFieldType().getFieldTypeName()) {
-                case BOOLEAN:{
-                    if((obj = row.get(f.getFieldName())) != null){
-                        values.add(Boolean.parseBoolean(obj.toString()));
-                    }
-                    else{
-                        values.add(null);
-                    }
-                    break;
-                }
-
-                case INTEGER: {
-                    if ((obj = row.get(f.getFieldName())) != null) {
-                        values.add(Integer.parseInt(obj.toString()));
-                    } else {
-                        values.add(null);
-                    }
-                    break;
-                }
-                case REAL:{
-                    if ((obj = row.get(f.getFieldName())) != null) {
-                        values.add(Double.parseDouble(obj.toString()));
-                    } else {
-                        values.add(null);
-                    }
-                    break;
-                }
-                case STRING:{
-                    if((obj = row.get(f.getFieldName())) != null){
-                        values.add(obj.toString());
-                    }
-                    else{
-                        values.add(null);
-                    }
-                    break;
-                }
-                case STRUCT: {
-                    if((obj = row.get(f.getFieldName())) != null){
-                        JSONObject struct = (JSONObject) obj;
-                        Object[] structValue = parseJson(struct, new StructType(f.getFieldType().getFields()));
-                        values.add(structValue);
-                    }
-                    else{
-                        values.add(null);
-                    }
-                    break;
-                }
-                case ARRAY: {
-                    FieldType elementType = f.getFieldType().getElementType();
-                    List<Object> retArray = new ArrayList<>();
-                    if((obj = row.get(f.getFieldName())) != null){
-                        JSONArray array = (JSONArray)obj;
-                        if(array != null && array.size() > 0){
-                            array.forEach((item) -> retArray.add(parseJson((JSONObject) item, new StructType(elementType.getFields()))));
-
-                        }
-                        values.add(retArray.toArray());
-                    }
-                    else{
-                        values.add(null);
-                    }
-
-                    break;
-                }
-
-                default:
-                    throw new UnsupportedOperationException(
-                            "Field type is not supported on " + f.getFieldName());
-            }
-        }
-
-
-        return values.toArray();
-    }
-
     @Override
-    public void initialize(){
+    public void initialize() {
         try {
-            FileReader fileReader = new FileReader(table.getTablePath());
-            JSONParser parser = new JSONParser();
-            JSONObject table = (JSONObject) parser.parse(fileReader);
-            JSONArray rows = (JSONArray) table.get("rows");
-            items = rows.iterator();
-
+            InputStream input = new FileInputStream(table.getTablePath());
+            reader = TupleReaderProvider.INSTANCE.create(table.getFormat(), schema, input);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new StreamExecutionException("Failed to open table file " + table.getTablePath(), e);
         }
     }
 
     @Override
     public void reset() {
         super.reset();
-
-        items = null;
-        schema = null;
+        reader = null;
 
     }
 

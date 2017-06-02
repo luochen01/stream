@@ -47,4 +47,9 @@ public class PrimitiveType extends AbstractFieldType {
         return this.getFieldTypeName().isNumerical() && another.getFieldTypeName().isNumerical();
     }
 
+    @Override
+    public String toString() {
+        return typeName.toString();
+    }
+
 }

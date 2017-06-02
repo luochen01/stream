@@ -7,6 +7,11 @@ import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.logical.LogicalPlan;
 
 public interface Table {
+    public enum InputFormat {
+        CSV,
+        JSON
+    }
+
     public String getTableName();
 
     public List<Field> getFields();
