@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import edu.uci.asterix.stream.field.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -69,16 +70,38 @@ public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> 
     private Object[] parseJson(JSONObject row, StructType schema){
 
         List<Object> values = new ArrayList<>();
-
+        Object obj;
 
         for (Field f : schema.getFields()) {
 
             switch (f.getFieldType().getFieldTypeName()) {
-                case BOOLEAN:
-                case INTEGER:
-                case REAL:
+                case BOOLEAN:{
+                    if((obj = row.get(f.getFieldName())) != null){
+                        values.add(Boolean.parseBoolean(obj.toString()));
+                    }
+                    else{
+                        values.add(null);
+                    }
+                    break;
+                }
+
+                case INTEGER: {
+                    if ((obj = row.get(f.getFieldName())) != null) {
+                        values.add(Integer.parseInt(obj.toString()));
+                    } else {
+                        values.add(null);
+                    }
+                    break;
+                }
+                case REAL:{
+                    if ((obj = row.get(f.getFieldName())) != null) {
+                        values.add(Double.parseDouble(obj.toString()));
+                    } else {
+                        values.add(null);
+                    }
+                    break;
+                }
                 case STRING:{
-                    Object obj;
                     if((obj = row.get(f.getFieldName())) != null){
                         values.add(obj.toString());
                     }
@@ -88,7 +111,6 @@ public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> 
                     break;
                 }
                 case STRUCT: {
-                    Object obj;
                     if((obj = row.get(f.getFieldName())) != null){
                         JSONObject struct = (JSONObject) obj;
                         Object[] structValue = parseJson(struct, new StructType(f.getFieldType().getFields()));
@@ -101,8 +123,6 @@ public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> 
                 }
                 case ARRAY: {
                     FieldType elementType = f.getFieldType().getElementType();
-
-                    Object obj;
                     List<Object> retArray = new ArrayList<>();
                     if((obj = row.get(f.getFieldName())) != null){
                         JSONArray array = (JSONArray)obj;
