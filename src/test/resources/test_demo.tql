@@ -15,10 +15,9 @@ WHERE sen.`Sensor.id` LIKE "3141-%";
 observation_stream1 = SENSORS_TO_OBSERVATION_STREAM(sensor_collection2);
 
 
-SELECT sen.id,  count(*) AS stream_count
-FROM observation_stream1 obs1 RANGE '5 seconds' SLIDE '5 seconds', Sensor sen
+SELECT sen.id,  count(*) AS stream_count, min(CAST (sen.coverage_id AS INT)) as min_location, max(CAST (sen.coverage_id AS INT)) as max_location
+FROM observation_stream1 obs1 RANGE '5 seconds' SLIDE '1 seconds', Sensor sen
 WHERE obs1.sensor_id = sen.id
 GROUP BY sen.id
-HAVING count(*)>1
 ORDER BY stream_count desc
 limit 5;

@@ -10,6 +10,7 @@ public abstract class LogicalPlan {
 
     public abstract LogicalPlan[] children();
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         print(sb, 0);
@@ -23,11 +24,17 @@ public abstract class LogicalPlan {
         sb.append(getName());
         sb.append(":");
         printContent(sb, level);
-
-        sb.append("\n");
-        for (LogicalPlan child : children()) {
-            child.print(sb, level + 1);
+        LogicalPlan[] children = children();
+        if (children.length > 0) {
+            sb.append("\n");
+            for (int i = 0; i < children.length; i++) {
+                children[i].print(sb, level + 1);
+                if (i < children.length - 1) {
+                    sb.append("\n");
+                }
+            }
         }
+
     }
 
     protected abstract void printContent(StringBuilder sb, int level);

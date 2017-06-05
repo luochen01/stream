@@ -13,7 +13,6 @@ public abstract class AggregateExpr extends UnaryExpr<Expr> {
 
     @Override
     public Object eval(Tuple input) {
-        //TODO: we might implement aggregate functions separately?
         throw new UnsupportedOperationException();
     }
 
