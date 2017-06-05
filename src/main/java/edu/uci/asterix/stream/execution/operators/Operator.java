@@ -31,6 +31,8 @@ public interface Operator {
 
     /**
      * Should be called before {@link #next()}
+     *
+     * @throws Exception
      */
     public void initialize();
 

@@ -77,4 +77,5 @@ public class TableImpl implements Table {
     public InputFormat getFormat() {
         return format;
     }
+
 }

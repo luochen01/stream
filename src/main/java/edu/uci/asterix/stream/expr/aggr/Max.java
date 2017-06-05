@@ -1,24 +1,18 @@
 package edu.uci.asterix.stream.expr.aggr;
 
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.execution.operators.GroupbyKey;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.field.FieldType;
 import edu.uci.asterix.stream.field.FieldTypeName;
 import edu.uci.asterix.stream.utils.Assertion;
 
-import java.util.List;
-
 public class Max extends AggregateExpr {
-
-    private FieldTypeName resultType;
-    private String fieldName;
 
     public Max(Expr child) {
         super("MAX", child);
         Assertion.asserts(child.getResultType().getFieldTypeName().isNumerical(),
                 "MAX only applies to numerical field");
-        resultType = child.getResultType().getFieldTypeName();
-        fieldName = child.toField().getFieldName();
 
     }
 
@@ -32,27 +26,20 @@ public class Max extends AggregateExpr {
         return new Max(children[0]);
     }
 
-
-
     @Override
-    public Object compute(Object[] key, Object currentValue, Tuple input) {
-        int id = input.getSchema().getFieldIndex(fieldName);
-        if (child.getResultType().getFieldTypeName().isNumerical()) {
-            if(resultType == FieldTypeName.INTEGER){
-
-                if (currentValue == null || (int)input.get(id) > (int)currentValue) {
-
-                    return input.get(id);
-                }
-            }
-            else{
-                if(currentValue == null || (double)input.get(id) > (double)currentValue){
-                    return input.get(id);
-                }
-            }
+    public Object compute(GroupbyKey key, Object currentValue, Tuple input) {
+        Object value = child.eval(input);
+        if (currentValue == null) {
+            return value;
+        }
+        if (value == null) {
             return currentValue;
         }
 
-        return null;
+        if (child.getResultType().getFieldTypeName() == FieldTypeName.INTEGER) {
+            return Integer.max((int) currentValue, (int) value);
+        } else {
+            return Double.max((double) currentValue, (double) value);
+        }
     }
 }

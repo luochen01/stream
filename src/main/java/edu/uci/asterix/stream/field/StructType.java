@@ -38,7 +38,30 @@ public class StructType extends AbstractFieldType {
                 return field;
             }
         }
+
+        // try to get field by ignoring qualifier
         return null;
+    }
+
+    public Field getField(String fieldName, boolean ignoreQualifier) {
+        if (ignoreQualifier) {
+            Field foundField = null;
+            int found = 0;
+            String suffix = "." + fieldName;
+            for (Field field : fields) {
+                if (field.getFieldName().equals(fieldName) || field.getFieldName().endsWith(suffix)) {
+                    foundField = field;
+                    found++;
+                }
+            }
+            if (found == 1) {
+                return foundField;
+            } else {
+                return null;
+            }
+        } else {
+            return getField(fieldName);
+        }
     }
 
     @Override

@@ -19,11 +19,10 @@ public class FieldAccess extends LeafExpr<Expr> {
         this.field = field;
         if (this.field != Field.ALL_FIELDS) {
             this.fieldIndex = schema.getFieldIndex(field.getFieldName());
-            Assertion.asserts(this.fieldIndex >= 0);
+            Assertion.asserts(this.fieldIndex >= 0, field.getFieldName() + " is not a valid field");
         } else {
             this.fieldIndex = -1;
         }
-
     }
 
     @Override

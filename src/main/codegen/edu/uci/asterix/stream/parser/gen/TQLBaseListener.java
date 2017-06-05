@@ -559,6 +559,18 @@ public class TQLBaseListener implements TQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterStream_table(@NotNull TQLParser.Stream_tableContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitStream_table(@NotNull TQLParser.Stream_tableContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterColumn_name(@NotNull TQLParser.Column_nameContext ctx) { }
 	/**
 	 * {@inheritDoc}

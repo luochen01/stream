@@ -10,6 +10,8 @@ import org.mockito.Mockito;
 import edu.uci.asterix.stream.catalog.Catalog;
 import edu.uci.asterix.stream.catalog.TableImpl;
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.execution.operators.Operator;
+import edu.uci.asterix.stream.execution.operators.TableScanOperator;
 import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.logical.LogicalTableScan;
 import edu.uci.asterix.stream.logical.analyzer.LogicalPlanAnalyzerTest;
@@ -51,21 +53,9 @@ public class TableScanOperatorTest extends LogicalPlanAnalyzerTest {
         jsonValue2[3] = new Tuple(location.getSchema(), new Object[] { null, null, null });
         jsonValue2[4] = new Tuple(observationType.getSchema(), new Object[] { Integer.toString(2), null, null, null });
 
-        Assert.assertEquals(schema, resultTuples.get(0).getSchema());
+        Assert.assertEquals(resultTuples.get(0), new Tuple(schema, jsonValue1));
+        Assert.assertEquals(resultTuples.get(1), new Tuple(schema, jsonValue2));
 
-        Object[] tuple1 = resultTuples.get(0).getAllValues();
-        Object[] tuple2 = resultTuples.get(1).getAllValues();
-        assertValues(jsonValue1, tuple1);
-        assertValues(jsonValue2, tuple2);
-
-    }
-
-    private void assertValues(Object[] values, Object[] tuple1) {
-        Assert.assertEquals(values[0], tuple1[0]);
-        Assert.assertEquals(values[1], tuple1[1]);
-        Assert.assertEquals(values[2], tuple1[2]);
-        Assert.assertEquals(values[3], tuple1[3]);
-        Assert.assertEquals(values[4], tuple1[4]);
     }
 
     private LogicalTableScan mockLogicalTableScan(TableImpl table, StructType schema) {

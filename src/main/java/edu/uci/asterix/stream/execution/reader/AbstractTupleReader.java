@@ -7,12 +7,15 @@ import edu.uci.asterix.stream.field.StructType;
 
 public abstract class AbstractTupleReader implements ITupleReader {
 
-    protected final StructType schema;
+    protected final StructType sourceSchema;
+
+    protected final StructType outputSchema;
 
     protected InputStream input;
 
-    public AbstractTupleReader(StructType schema, InputStream input) {
-        this.schema = schema;
+    public AbstractTupleReader(StructType sourceSchema, StructType outputSchema, InputStream input) {
+        this.sourceSchema = sourceSchema;
+        this.outputSchema = outputSchema;
         this.input = input;
     }
 

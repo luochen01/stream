@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.execution.operators.SortOperator;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.expr.SortOrder;
 import edu.uci.asterix.stream.expr.fields.FieldAccess;

@@ -1,12 +1,16 @@
 package edu.uci.asterix.stream.catalog;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import edu.uci.asterix.stream.catalog.Table.InputFormat;
 import edu.uci.asterix.stream.field.ArrayType;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.FieldTypeName;
 import edu.uci.asterix.stream.field.PrimitiveType;
+import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.function.Function;
 
 /**
@@ -89,11 +93,11 @@ public class Catalog {
         infrastructureType.addField(new Field("description", PrimitiveType.get(FieldTypeName.STRING)));
         Catalog.INSTANCE.addTable(infrastructureType);
 
-        TableImpl infrastructure = new TableImpl("Infrastructure");
-        infrastructure.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
+        TableImpl infrastructure = new TableImpl("Infrastructure", InputFormat.CSV, "src/test/resources/infra.csv");
         infrastructure.addField(new Field("name", PrimitiveType.get(FieldTypeName.STRING)));
-        infrastructure.addField(new Field("type", infrastructureType.getSchema()));
-        infrastructure.addField(new Field("region", region.getSchema()));
+        infrastructure.addField(new Field("type", PrimitiveType.get(FieldTypeName.STRING)));
+        infrastructure.addField(new Field("semantic_entity_id", PrimitiveType.get(FieldTypeName.STRING)));
+        infrastructure.addField(new Field("region_id", PrimitiveType.get(FieldTypeName.STRING)));
         Catalog.INSTANCE.addTable(infrastructure);
 
         //devices
@@ -121,18 +125,17 @@ public class Catalog {
         sensorType.addField(new Field("payloadSchema", PrimitiveType.get(FieldTypeName.STRING)));
         Catalog.INSTANCE.addTable(sensorType);
 
-        TableImpl sensor = new TableImpl("Sensor");
+        TableImpl sensor = new TableImpl("Sensor", InputFormat.CSV, "src/test/resources/sensors.csv");
         sensor.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
         sensor.addField(new Field("name", PrimitiveType.get(FieldTypeName.STRING)));
-        sensor.addField(new Field("description", PrimitiveType.get(FieldTypeName.STRING)));
-        sensor.addField(new Field("type", sensorType.getSchema()));
-        sensor.addField(new Field("location", location.getSchema()));
-        sensor.addField(new Field("platform", platform.getSchema()));
-        sensor.addField(new Field("user", user.getSchema()));
-        sensor.addField(new Field("coverageRooms", new ArrayType(infrastructure.getSchema())));
-        sensor.addField(new Field("mac", PrimitiveType.get(FieldTypeName.STRING)));
-        sensor.addField(new Field("IP", PrimitiveType.get(FieldTypeName.STRING)));
-        sensor.addField(new Field("port", PrimitiveType.get(FieldTypeName.STRING)));
+        sensor.addField(new Field("sensorIP", PrimitiveType.get(FieldTypeName.STRING)));
+        sensor.addField(new Field("sensorPort", PrimitiveType.get(FieldTypeName.STRING)));
+        sensor.addField(new Field("coverage_id", PrimitiveType.get(FieldTypeName.STRING)));
+        sensor.addField(new Field("location_id", PrimitiveType.get(FieldTypeName.STRING)));
+        sensor.addField(new Field("platform_id", PrimitiveType.get(FieldTypeName.STRING)));
+        sensor.addField(new Field("user_id", PrimitiveType.get(FieldTypeName.STRING)));
+        sensor.addField(new Field("sensor_type_id", PrimitiveType.get(FieldTypeName.STRING)));
+
         Catalog.INSTANCE.addTable(sensor);
 
         TableImpl observationType = new TableImpl("ObservationType");
@@ -142,12 +145,16 @@ public class Catalog {
         observationType.addField(new Field("payloadSchema", PrimitiveType.get(FieldTypeName.STRING)));
         Catalog.INSTANCE.addTable(observationType);
 
+        List<Field> clientFields = new ArrayList<>();
+        clientFields.add(new Field("client_id", PrimitiveType.get(FieldTypeName.STRING)));
+        StructType clientType = new StructType(clientFields);
+
         TableImpl observation = new TableImpl("Observation");
         observation.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
-        observation.addField(new Field("sensor", sensor.getSchema()));
+        observation.addField(new Field("sensor_id", PrimitiveType.get(FieldTypeName.STRING)));
         observation.addField(new Field("timeStamp", PrimitiveType.get(FieldTypeName.STRING)));
-        observation.addField(new Field("payload", location.getSchema()));
-        observation.addField(new Field("type", observationType.getSchema()));
+        observation.addField(new Field("payload", clientType));
+        observation.addField(new Field("observation_type_id", PrimitiveType.get(FieldTypeName.STRING)));
         Catalog.INSTANCE.addTable(observation);
 
     }

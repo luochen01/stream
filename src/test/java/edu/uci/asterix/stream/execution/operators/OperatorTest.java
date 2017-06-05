@@ -7,6 +7,7 @@ import java.util.List;
 import org.mockito.Mockito;
 
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.execution.operators.Operator;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.expr.fields.FieldAccess;
 import edu.uci.asterix.stream.expr.logic.EqualTo;

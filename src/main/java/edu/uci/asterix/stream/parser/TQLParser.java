@@ -2,13 +2,13 @@ package edu.uci.asterix.stream.parser;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.uci.asterix.stream.parser.gen.TQLBaseVisitor;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -18,6 +18,8 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import edu.uci.asterix.stream.api.IQueryConfig;
+import edu.uci.asterix.stream.api.QueryContext;
 import edu.uci.asterix.stream.catalog.Catalog;
 import edu.uci.asterix.stream.catalog.ObservationStream;
 import edu.uci.asterix.stream.catalog.SensorCollection;
@@ -78,7 +80,7 @@ import edu.uci.asterix.stream.logical.LogicalTableScan;
 import edu.uci.asterix.stream.logical.analyzer.CNFNormalizer;
 import edu.uci.asterix.stream.logical.analyzer.IdentifyAggregateExprs;
 import edu.uci.asterix.stream.logical.analyzer.IdentifyJoinConditions;
-
+import edu.uci.asterix.stream.parser.gen.TQLBaseVisitor;
 import edu.uci.asterix.stream.parser.gen.TQLLexer;
 import edu.uci.asterix.stream.parser.gen.TQLParser.AggrContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.AndContext;
@@ -111,6 +113,7 @@ import edu.uci.asterix.stream.parser.gen.TQLParser.ParseContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.SelectContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.Select_stmtContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.Select_stream_stmtContext;
+import edu.uci.asterix.stream.parser.gen.TQLParser.Stream_tableContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.Stream_windowContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.TableContext;
 import edu.uci.asterix.stream.parser.gen.TQLParser.Time_intervalContext;
@@ -119,11 +122,17 @@ import edu.uci.asterix.stream.utils.Assertion;
 
 public class TQLParser {
 
-    private final QueryContext queryContext = new QueryContext();
+    private QueryContext queryContext;
+
+    private final IQueryConfig config;
+
+    public TQLParser(IQueryConfig config) {
+        this.config = config;
+    }
 
     public QueryContext parse(String file) throws IOException {
-
-        CharStream charStream = CharStreams.fromFileName("src/test/resources/test.tql");
+        this.queryContext = new QueryContext(config);
+        CharStream charStream = CharStreams.fromFileName(file);
         TQLLexer lexer = new TQLLexer(charStream);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         edu.uci.asterix.stream.parser.gen.TQLParser parser = new edu.uci.asterix.stream.parser.gen.TQLParser(
@@ -220,6 +229,8 @@ public class TQLParser {
 
         private LogicalPlan currentPlan = null;
 
+        private LogicalPlan planBeforeGroupby = null;
+
         @Override
         public LogicalPlan visitSelect_stmt(Select_stmtContext ctx) {
             currentPlan = ctx.from().accept(this);
@@ -228,7 +239,7 @@ public class TQLParser {
                 currentPlan = ctx.where().accept(this);
                 //identify join condition
                 IdentifyJoinConditions identify = new IdentifyJoinConditions();
-                currentPlan  = identify.analyze(currentPlan);
+                currentPlan = identify.analyze(currentPlan);
             }
             //select must not be null
             currentPlan = ctx.select().accept(this);
@@ -245,6 +256,7 @@ public class TQLParser {
                 IdentifyJoinConditions identify = new IdentifyJoinConditions();
                 currentPlan = identify.analyze(currentPlan);
             }
+            planBeforeGroupby = currentPlan;
             if (ctx.group_by() != null) {
                 currentPlan = ctx.group_by().accept(this);
             }
@@ -265,9 +277,18 @@ public class TQLParser {
 
         @Override
         public LogicalPlan visitFrom_stream(From_streamContext ctx) {
-            LogicalPlan from = ctx.stream_window().stream().map(tableCtx -> tableCtx.accept(this))
+            LogicalPlan from = ctx.stream_table().stream().map(tableCtx -> tableCtx.accept(this))
                     .reduce((left, right) -> new LogicalJoin(left, right, null, false)).get();
             return from;
+        }
+
+        @Override
+        public LogicalPlan visitStream_table(Stream_tableContext ctx) {
+            if (ctx.table() != null) {
+                return ctx.table().accept(this);
+            } else {
+                return ctx.stream_window().accept(this);
+            }
         }
 
         @Override
@@ -351,7 +372,10 @@ public class TQLParser {
                 exprs.add(new FieldAccess(Field.ALL_FIELDS, null));
             } else {
                 ctx.column_list().result_column().forEach(columnCtx -> {
-                    Expr expr = columnCtx.expr().accept(new ExprVisitor(currentPlan.getSchema(), accessedTables));
+                    StructType schema = planBeforeGroupby != null ? planBeforeGroupby.getSchema()
+                            : currentPlan.getSchema();
+
+                    Expr expr = columnCtx.expr().accept(new ExprVisitor(schema, accessedTables));
                     if (columnCtx.column_alias() != null) {
                         expr = new As(expr, columnCtx.column_alias().getText());
                     }
@@ -382,7 +406,7 @@ public class TQLParser {
             }
             LogicExpr havingCNF = CNFNormalizer.INSTANCE.toCNF(havingExpr);
 
-            return new LogicalGroupby(currentPlan, exprs, null, havingCNF);
+            return new LogicalGroupby(currentPlan, exprs, Collections.EMPTY_LIST, havingCNF);
         }
 
         @Override
@@ -402,11 +426,11 @@ public class TQLParser {
 
         @Override
         public LogicalPlan visitLimit(LimitContext ctx) {
-            int limit = Integer.valueOf(ctx.LIMIT().getText());
+            int limit = Integer.valueOf(ctx.INT_LITERAL(0).getText());
 
             int offset = 0;
             if (ctx.OFFSET() != null) {
-                offset = Integer.valueOf(ctx.OFFSET().getText());
+                offset = Integer.valueOf(ctx.INT_LITERAL(1).getText());
             }
             return new LogicalLimit(currentPlan, limit, offset);
         }

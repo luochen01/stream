@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.execution.operators.Operator;
 import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.logical.LogicalPlan;
 

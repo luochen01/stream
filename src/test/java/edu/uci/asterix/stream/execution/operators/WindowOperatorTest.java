@@ -1,12 +1,9 @@
 package edu.uci.asterix.stream.execution.operators;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -23,6 +20,7 @@ import edu.uci.asterix.stream.field.FieldTypeName;
 import edu.uci.asterix.stream.field.PrimitiveType;
 import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.logical.LogicalStreamScan;
+import edu.uci.asterix.stream.utils.Utils;
 
 public class WindowOperatorTest {
 
@@ -63,7 +61,7 @@ public class WindowOperatorTest {
         TestTimeProvider provider = new TestTimeProvider();
         WindowOperator windowOperator = new WindowOperator(new ListOperator(testSchema, tuples),
                 mockLogicalScan(new Window(3, 3)), provider);
-
+        windowOperator.initialize();
         List<Tuple> resultTuples = fetchTuples(windowOperator);
 
         Assert.assertEquals(4, resultTuples.size());
@@ -91,7 +89,7 @@ public class WindowOperatorTest {
         TestTimeProvider provider = new TestTimeProvider();
         WindowOperator windowOperator = new WindowOperator(new ListOperator(testSchema, tuples),
                 mockLogicalScan(new Window(1, 3)), provider);
-
+        windowOperator.initialize();
         List<Tuple> resultTuples = fetchTuples(windowOperator);
 
         Assert.assertEquals(2, resultTuples.size());
@@ -115,6 +113,7 @@ public class WindowOperatorTest {
         TestTimeProvider provider = new TestTimeProvider();
         WindowOperator windowOperator = new WindowOperator(new ListOperator(testSchema, tuples),
                 mockLogicalScan(new Window(4, 3)), provider);
+        windowOperator.initialize();
 
         List<Tuple> resultTuples = fetchTuples(windowOperator);
         Assert.assertEquals(4, resultTuples.size());
@@ -153,13 +152,7 @@ public class WindowOperatorTest {
     }
 
     private Tuple getTuple(long timestamp) {
-        return new Tuple(testSchema, new Object[] { getTimestring(timestamp) });
-    }
-
-    private String getTimestring(long timestamp) {
-        SimpleDateFormat format = new SimpleDateFormat(StreamConfig.Instance.streamTimeFormat(), Locale.US);
-        Date date = new Date(timestamp);
-        return format.format(date);
+        return new Tuple(testSchema, new Object[] { Utils.getTimeString(timestamp) });
     }
 
 }

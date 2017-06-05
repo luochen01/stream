@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.execution.operators.HashJoinOperator;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.expr.fields.FieldAccess;
 import edu.uci.asterix.stream.expr.logic.EqualTo;

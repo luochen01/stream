@@ -304,6 +304,12 @@ public interface TQLVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitIs_null(@NotNull TQLParser.Is_nullContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link TQLParser#stream_table}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStream_table(@NotNull TQLParser.Stream_tableContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link TQLParser#column_name}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

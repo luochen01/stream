@@ -1,17 +1,16 @@
 package edu.uci.asterix.stream.expr.aggr;
 
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.execution.operators.GroupbyKey;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.field.FieldType;
 import edu.uci.asterix.stream.field.FieldTypeName;
 import edu.uci.asterix.stream.field.PrimitiveType;
 
-import java.util.List;
-
 /**
  * Current only support count(*)
  * child must be {@link AllFields}
- * 
+ *
  * @author luochen
  */
 public class Count extends AggregateExpr {
@@ -31,13 +30,11 @@ public class Count extends AggregateExpr {
     }
 
     @Override
-    public Object compute(Object[] key, Object currentValue, Tuple input) {
-
-        if(currentValue == null)
-        {
+    public Object compute(GroupbyKey key, Object currentValue, Tuple input) {
+        if (currentValue == null) {
             return 1;
         }
-        return (int)currentValue+1;
+        return (int) currentValue + 1;
     }
 
 }

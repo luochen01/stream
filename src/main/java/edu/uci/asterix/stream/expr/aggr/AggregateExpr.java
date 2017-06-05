@@ -1,10 +1,9 @@
 package edu.uci.asterix.stream.expr.aggr;
 
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.execution.operators.GroupbyKey;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.expr.UnaryExpr;
-
-import java.util.List;
 
 public abstract class AggregateExpr extends UnaryExpr<Expr> {
 
@@ -23,8 +22,9 @@ public abstract class AggregateExpr extends UnaryExpr<Expr> {
         return symbol + "(" + child + ")";
     }
 
+    public abstract Object compute(GroupbyKey key, Object currentValue, Tuple input);
 
-    public Object compute(Object[] key, Object currentValue, Tuple input){
-        throw new UnsupportedOperationException();
-    };
+    public void reset() {
+
+    }
 }

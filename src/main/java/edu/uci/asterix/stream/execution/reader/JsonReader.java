@@ -23,10 +23,11 @@ import edu.uci.asterix.stream.field.StructType;
 public class JsonReader extends AbstractTupleReader {
     private final static Logger LOGGER = LoggerFactory.getLogger(JsonReader.class);
 
-    private final Iterator iterator;
+    private Iterator iterator;
 
-    public JsonReader(StructType schema, InputStream input) throws IOException, ParseException {
-        super(schema, input);
+    public JsonReader(StructType sourceSchema, StructType outputSchema, InputStream input)
+            throws IOException, ParseException {
+        super(sourceSchema, outputSchema, input);
         JSONParser parser = new JSONParser();
         JSONObject table = (JSONObject) parser.parse(new InputStreamReader(input));
         JSONArray rows = (JSONArray) table.get("rows");
@@ -35,9 +36,11 @@ public class JsonReader extends AbstractTupleReader {
 
     @Override
     public Tuple nextTuple() {
-        while (iterator.hasNext()) {
+        while (iterator != null && iterator.hasNext()) {
             JSONObject row = (JSONObject) iterator.next();
-            return parseStruct(row, schema);
+            Tuple tuple = parseStruct(row, sourceSchema);
+            tuple.setSchema(outputSchema);
+            return tuple;
         }
         return null;
     }
@@ -113,6 +116,12 @@ public class JsonReader extends AbstractTupleReader {
             default:
                 throw new UnsupportedOperationException("Unknown primitive type " + type);
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        this.iterator = null;
     }
 
 }

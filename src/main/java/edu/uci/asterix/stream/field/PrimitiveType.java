@@ -28,6 +28,11 @@ public class PrimitiveType extends AbstractFieldType {
     }
 
     @Override
+    public boolean isPrimitive() {
+        return true;
+    }
+
+    @Override
     public FieldType upcast(FieldType another) {
         if (!typeName.isNumerical() || !another.getFieldTypeName().isNumerical()) {
             throw new UnsupportedOperationException();

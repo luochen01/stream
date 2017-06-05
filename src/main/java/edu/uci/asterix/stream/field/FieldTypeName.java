@@ -17,4 +17,5 @@ public enum FieldTypeName {
     public boolean isNumerical() {
         return this == REAL || this == INTEGER;
     }
+
 }

@@ -1,9 +1,6 @@
 package edu.uci.asterix.stream.execution.operators;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -16,6 +13,7 @@ import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Window;
 import edu.uci.asterix.stream.expr.fields.FieldAccess;
 import edu.uci.asterix.stream.logical.LogicalStreamScan;
+import edu.uci.asterix.stream.utils.Utils;
 
 /**
  * stream definition -> stream
@@ -36,9 +34,6 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
 
     protected final SystemTimeProvider timeProvider;
 
-    protected final SimpleDateFormat timeFormat = new SimpleDateFormat(StreamConfig.Instance.streamTimeFormat(),
-            Locale.US);
-
     protected final FieldAccess timeFieldAccessor;
 
     /**
@@ -55,9 +50,13 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
      * Records the begin timestamp of the next sliding window.
      * All tuples with timestamp < nextSliceTimestampBegin can be safely removed.
      */
-    protected long nextSliceTimestampBegin;
+    protected long nextSlideTimestampBegin;
 
     protected boolean needSleep = false;
+
+    protected boolean initialized = false;
+
+    protected int consumedTuples = 0;
 
     protected Iterator<Tuple> iterator;
 
@@ -67,10 +66,8 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
         this.window = logicalStreamScan.getWindow();
         this.timeProvider = timeProvider;
 
-        this.timeFieldAccessor = new FieldAccess(this.getSchema().getField(StreamConfig.Instance.streamTimeField()),
-                this.getSchema());
-
-        this.child.initialize();
+        this.timeFieldAccessor = new FieldAccess(
+                this.getSchema().getField(StreamConfig.Instance.streamTimeField(), true), this.getSchema());
 
         /**
          * This thread keeps fetching tuples from child,
@@ -87,9 +84,25 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
                 }
             }
         });
+    }
+
+    @Override
+    public void reset() {
+        //do nothing
+    }
+
+    @Override
+    public void initialize() {
+        if (initialized) {
+            return;
+        }
+
+        this.initialized = true;
+        this.child.initialize();
+
         this.intakeThread.start();
 
-        slideTimestampEnd = timeProvider.currentTimeMillis();
+        slideTimestampEnd = timeProvider.currentTimeMillis() / 1000;
         sleep();
         internalReset();
     }
@@ -97,11 +110,15 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
     @Override
     public Tuple next() {
         if (needSleep) {
+            logger.info("Consumed {} tuples between slide window {} to {}", consumedTuples,
+                    Utils.getTimeString((slideTimestampEnd - window.getSlide()) * 1000),
+                    Utils.getTimeString(slideTimestampEnd * 1000));
             sleep();
             internalReset();
         }
 
         while (iterator.hasNext()) {
+            consumedTuples++;
             Tuple tuple = iterator.next();
             long tupleTimestamp = getTupleTimestamp(tuple);
             if (tupleTimestamp == -1) {
@@ -113,7 +130,7 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
                 break;
             }
 
-            if (tupleTimestamp < nextSliceTimestampBegin) {
+            if (tupleTimestamp < nextSlideTimestampBegin) {
                 //the current tuple can be deleted
                 iterator.remove();
             }
@@ -153,14 +170,14 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
     }
 
     protected void sleep() {
-        long nextSlidetimestampEnd = slideTimestampEnd + window.getSlide() * 1000;
+        long nextSlidetimestampEnd = slideTimestampEnd + window.getSlide();
         try {
-            long currentTimestamp = timeProvider.currentTimeMillis();
+            long currentTimestamp = timeProvider.currentTimeMillis() / 1000;
             if (nextSlidetimestampEnd > currentTimestamp) {
-                logger.info("Window Operator is about to sleep for {}ms", nextSlidetimestampEnd - currentTimestamp);
-                Thread.sleep(nextSlidetimestampEnd - currentTimestamp);
+                logger.warn("Window Operator is about to sleep for {}s", nextSlidetimestampEnd - currentTimestamp);
+                Thread.sleep((nextSlidetimestampEnd - currentTimestamp) * 1000);
             } else {
-                logger.warn("Window Operator is lagged for {}ms", currentTimestamp - nextSlidetimestampEnd);
+                logger.warn("Window Operator is lagged for {}s", currentTimestamp - nextSlidetimestampEnd);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -172,35 +189,23 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
      */
     protected void internalReset() {
         needSleep = false;
-        slideTimestampEnd = slideTimestampEnd + window.getSlide() * 1000;
-        slideTimestampBegin = slideTimestampEnd - window.getRange() * 1000;
-        nextSliceTimestampBegin = slideTimestampBegin + window.getSlide() * 1000;
+        slideTimestampEnd = slideTimestampEnd + window.getSlide();
+        slideTimestampBegin = slideTimestampEnd - window.getRange();
+        nextSlideTimestampBegin = slideTimestampBegin + window.getSlide();
+        consumedTuples = 0;
 
         iterator = bufferQueue.iterator();
     }
 
     protected long getTupleTimestamp(Tuple tuple) {
-        String timestamp = (String) timeFieldAccessor.eval(tuple);
-        if (timestamp == null) {
-            return -1;
+        String timeString = (String) timeFieldAccessor.eval(tuple);
+        long timestamp = Utils.getTimestamp(timeString);
+        if (timestamp == -1) {
+            logger.error("Ignored illegal timestamp {}", timeString);
+            return timestamp;
         } else {
-            try {
-                return timeFormat.parse(timestamp).getTime();
-            } catch (ParseException e) {
-                logger.error("Ignored illegal timestamp {}", timestamp);
-                return -1;
-            }
+            return timestamp / 1000;
         }
-    }
-
-    @Override
-    public void reset() {
-        //do nothing
-    }
-
-    @Override
-    public void initialize() {
-        //do nothing
     }
 
 }

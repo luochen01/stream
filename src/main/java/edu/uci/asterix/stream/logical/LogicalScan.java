@@ -20,7 +20,7 @@ public abstract class LogicalScan<T extends Table> extends LogicalPlan {
         this.alias = alias;
         List<Field> fields = table.getFields().stream().map(field -> field.withTableAlias(alias))
                 .collect(Collectors.toList());
-        schema = new StructType(fields);
+        this.schema = new StructType(fields);
     }
 
     public T getTable() {

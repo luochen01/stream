@@ -335,6 +335,13 @@ public class TQLBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements TQ
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitStream_table(@NotNull TQLParser.Stream_tableContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitColumn_name(@NotNull TQLParser.Column_nameContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

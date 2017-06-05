@@ -14,11 +14,7 @@ public class LogicalStreamScan extends LogicalScan<ObservationStream> {
         super(stream, alias);
         this.window = window;
 
-        Assertion.asserts(window.getRange() >= window.getSlide(),
-                "RANGE should be no less than SLIDE in stream operator");
-
         Field timeField = stream.getSchema().getField(StreamConfig.Instance.streamTimeField());
-        //TODO: currently this would fail the schema because we do not know how to obtain streams
         Assertion.asserts(timeField != null,
                 "Required time field " + StreamConfig.Instance.streamTimeField() + " is not found in stream schema");
     }

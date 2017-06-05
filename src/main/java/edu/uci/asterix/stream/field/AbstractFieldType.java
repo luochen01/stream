@@ -21,10 +21,16 @@ public abstract class AbstractFieldType implements FieldType {
     }
 
     @Override
+    public boolean isPrimitive() {
+        return false;
+    }
+
+    @Override
     public List<Field> getFields() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public int getFieldCount() {
         throw new UnsupportedOperationException();
     }

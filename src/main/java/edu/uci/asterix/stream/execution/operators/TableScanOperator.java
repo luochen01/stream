@@ -9,29 +9,29 @@ import edu.uci.asterix.stream.exception.StreamExecutionException;
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.execution.reader.ITupleReader;
 import edu.uci.asterix.stream.execution.reader.TupleReaderProvider;
-import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.logical.LogicalTableScan;
 
 public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> {
 
     private final TableImpl table;
 
-    private final StructType schema;
-
     private ITupleReader reader;
 
     public TableScanOperator(LogicalTableScan logicalScan) {
         super(logicalScan);
         this.table = logicalScan.getTable();
-        this.schema = table.getSchema();
     }
 
     @Override
     public Tuple next() {
+        if (reader == null) {
+            return null;
+        }
         Tuple tuple = reader.nextTuple();
         if (tuple == null) {
             try {
                 reader.close();
+                reader = null;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -62,7 +62,7 @@ public class TableScanOperator extends AbstractStreamOperator<LogicalTableScan> 
     public void initialize() {
         try {
             InputStream input = new FileInputStream(table.getTablePath());
-            reader = TupleReaderProvider.INSTANCE.create(table.getFormat(), schema, input);
+            reader = TupleReaderProvider.INSTANCE.create(table.getFormat(), table.getSchema(), getSchema(), input);
         } catch (Exception e) {
             throw new StreamExecutionException("Failed to open table file " + table.getTablePath(), e);
         }

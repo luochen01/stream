@@ -1,25 +1,29 @@
-package edu.uci.asterix.stream.parser;
+package edu.uci.asterix.stream.api;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import edu.uci.asterix.stream.catalog.ObservationStream;
 import edu.uci.asterix.stream.catalog.SensorCollection;
+import edu.uci.asterix.stream.parser.StreamQuery;
 
 /**
  * Provides necessary information for processing a query
- * 
+ *
  * @author luochen
  */
 public class QueryContext {
 
-    private Map<String, SensorCollection> sensorCollections = new HashMap<>();
+    private final Map<String, SensorCollection> sensorCollections = new HashMap<>();
 
-    private Map<String, ObservationStream> streams = new HashMap<>();
+    private final Map<String, ObservationStream> streams = new HashMap<>();
 
     private StreamQuery query;
 
-    public QueryContext() {
+    private final IQueryConfig config;
+
+    public QueryContext(IQueryConfig config) {
+        this.config = config;
     }
 
     public void addSensorCollection(SensorCollection collection) {
@@ -47,4 +51,7 @@ public class QueryContext {
         this.query = query;
     }
 
+    public IQueryConfig getConfig() {
+        return config;
+    }
 }

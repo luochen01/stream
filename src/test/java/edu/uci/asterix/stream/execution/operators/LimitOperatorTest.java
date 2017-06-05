@@ -1,6 +1,7 @@
 package edu.uci.asterix.stream.execution.operators;
 
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.execution.operators.LimitOperator;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.FieldTypeName;
 import edu.uci.asterix.stream.field.PrimitiveType;

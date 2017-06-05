@@ -2,6 +2,8 @@ package edu.uci.asterix.stream.execution.operators;
 
 import edu.uci.asterix.stream.catalog.TableImpl;
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.execution.operators.GroupbyOperator;
+import edu.uci.asterix.stream.execution.operators.Operator;
 import edu.uci.asterix.stream.expr.Expr;
 import edu.uci.asterix.stream.expr.aggr.*;
 import edu.uci.asterix.stream.expr.fields.FieldAccess;

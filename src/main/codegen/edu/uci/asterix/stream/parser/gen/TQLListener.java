@@ -501,6 +501,16 @@ public interface TQLListener extends ParseTreeListener {
 	 */
 	void exitIs_null(@NotNull TQLParser.Is_nullContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link TQLParser#stream_table}.
+	 * @param ctx the parse tree
+	 */
+	void enterStream_table(@NotNull TQLParser.Stream_tableContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link TQLParser#stream_table}.
+	 * @param ctx the parse tree
+	 */
+	void exitStream_table(@NotNull TQLParser.Stream_tableContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link TQLParser#column_name}.
 	 * @param ctx the parse tree
 	 */

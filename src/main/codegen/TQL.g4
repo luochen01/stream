@@ -51,7 +51,10 @@ table:
   table_name (alias_name)?;
 
 from_stream:
-  FROM stream_window (',' stream_window)*;
+  FROM stream_table (',' stream_table)*;
+
+stream_table:
+  stream_window|table;
 
 stream_window:
   observation_stream_name (alias_name)? RANGE time_interval SLIDE time_interval;

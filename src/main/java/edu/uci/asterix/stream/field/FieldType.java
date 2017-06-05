@@ -8,14 +8,14 @@ public interface FieldType {
 
     /**
      * for array
-     * 
+     *
      * @return
      */
     public FieldType getElementType();
 
     /**
      * for struct type
-     * 
+     *
      * @return
      */
     public List<Field> getFields();
@@ -29,5 +29,8 @@ public interface FieldType {
     public int getFieldIndex(String field);
 
     public Field getField(String field);
+
+
+    public boolean isPrimitive();
 
 }

@@ -11,11 +11,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StreamConfig {
-    public static final String Case_Sensitive = "case.sensitive";
+    private static final String Case_Sensitive = "case.sensitive";
 
-    public static final String Stream_Time_Field = "stream.time.field";
+    private static final String Stream_Sensor_Id_Field = "stream.sensor.id.field";
 
-    public static final String Stream_Time_Format = "stream.time.format";
+    private static final String Stream_Time_Field = "stream.time.field";
+
+    private static final String Stream_Time_Format = "stream.time.format";
+
+    private static final String Stream_Table_Name = "stream.table.name";
+
+    private static final String Sensor_Id_Field = "sensor.id.field";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamConfig.class);
 
@@ -68,6 +74,18 @@ public class StreamConfig {
 
     public String streamTimeFormat() {
         return getString(Stream_Time_Format, "yyyy-MM-dd HH:mm:ss");
+    }
+
+    public String streamSensorIdField() {
+        return getString(Stream_Sensor_Id_Field, "sensor_id");
+    }
+
+    public String streamTableName() {
+        return getString(Stream_Table_Name, "Observation");
+    }
+
+    public String sensorIdField() {
+        return getString(Sensor_Id_Field, "id");
     }
 
     public boolean getBoolean(String key, boolean defaultValue) {

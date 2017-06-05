@@ -1,7 +1,12 @@
 package edu.uci.asterix.stream.execution;
 
 import java.util.Arrays;
+import java.util.List;
 
+import edu.uci.asterix.stream.field.ArrayType;
+import edu.uci.asterix.stream.field.Field;
+import edu.uci.asterix.stream.field.FieldType;
+import edu.uci.asterix.stream.field.FieldTypeName;
 import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.utils.Assertion;
 
@@ -21,7 +26,7 @@ public class Tuple {
 
     protected final Object[] values;
 
-    protected final StructType schema;
+    protected StructType schema;
 
     public Tuple(StructType schema) {
         this.schema = schema;
@@ -56,7 +61,61 @@ public class Tuple {
 
     @Override
     public String toString() {
-        return Arrays.toString(values);
+        StringBuilder builder = new StringBuilder();
+        toStructString(builder, this, schema);
+        return builder.toString();
+    }
+
+    private void toStructString(StringBuilder sb, Tuple tuple, StructType schema) {
+        List<Field> fields = schema.getFields();
+        sb.append("{");
+        for (int i = 0; i < tuple.values.length; i++) {
+            sb.append(fields.get(i).getFieldName());
+            sb.append(":");
+            toFieldString(sb, tuple.values[i], fields.get(i).getFieldType());
+            if (i < tuple.values.length - 1) {
+                sb.append(",");
+            }
+        }
+        sb.append("}");
+    }
+
+    private void toArrayString(StringBuilder sb, Object[] values, ArrayType type) {
+        sb.append("[");
+        for (int i = 0; i < values.length; i++) {
+            toFieldString(sb, values[i], type.getElementType());
+            if (i < values.length - 1) {
+                sb.append(",");
+            }
+        }
+        sb.append("]");
+
+    }
+
+    private void toFieldString(StringBuilder sb, Object value, FieldType type) {
+        if (value == null) {
+            sb.append("NULL");
+            return;
+        }
+        FieldTypeName typeName = type.getFieldTypeName();
+        switch (typeName) {
+            case BOOLEAN:
+            case INTEGER:
+            case STRING:
+            case REAL:
+                sb.append(value);
+                break;
+            case ARRAY:
+                toArrayString(sb, (Object[]) value, (ArrayType) type);
+                break;
+            case STRUCT:
+                toStructString(sb, (Tuple) value, (StructType) type);
+                break;
+        }
+    }
+
+    public void setSchema(StructType schema) {
+        this.schema = schema;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package edu.uci.asterix.stream.expr;
 
+import java.util.Arrays;
+
 import edu.uci.asterix.stream.field.Field;
 
 public abstract class AbstractExpr<T extends Expr> implements Expr {
@@ -14,6 +16,7 @@ public abstract class AbstractExpr<T extends Expr> implements Expr {
         this.symbol = symbol;
     }
 
+    @Override
     public boolean fastEqual(Expr another) {
         if (another == null) {
             return false;
@@ -21,10 +24,12 @@ public abstract class AbstractExpr<T extends Expr> implements Expr {
         return this.id == another.getId();
     }
 
+    @Override
     public Field toField() {
         return new Field("expr#" + id, getResultType());
     }
 
+    @Override
     public int getId() {
         return id;
     }
@@ -54,6 +59,12 @@ public abstract class AbstractExpr<T extends Expr> implements Expr {
                 return false;
         } else if (!symbol.equals(other.symbol))
             return false;
+
+        Expr[] children = this.children();
+        Expr[] otherChildren = other.children();
+        if (!Arrays.equals(children, otherChildren)) {
+            return false;
+        }
         return true;
     }
 

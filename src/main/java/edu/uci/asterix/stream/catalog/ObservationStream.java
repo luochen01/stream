@@ -2,17 +2,25 @@ package edu.uci.asterix.stream.catalog;
 
 import java.util.List;
 
+import edu.uci.asterix.stream.conf.StreamConfig;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.logical.LogicalPlan;
+import edu.uci.asterix.stream.utils.Assertion;
 
 public class ObservationStream implements Table {
-    private String name;
+    private final String name;
     private SensorCollection collection;
-    private StructType schema;
+    private final StructType schema;
 
     public ObservationStream(String name) {
         this.name = name;
+        TableImpl streamTable = Catalog.INSTANCE.getTable(StreamConfig.Instance.streamTableName());
+
+        Assertion.asserts(streamTable != null,
+                "Stream schema is not found for " + StreamConfig.Instance.streamTableName());
+        this.schema = streamTable.getSchema();
+
     }
 
     public SensorCollection getSensorCollection() {
@@ -21,7 +29,6 @@ public class ObservationStream implements Table {
 
     public void setSensorCollection(SensorCollection collection) {
         this.collection = collection;
-        this.schema = collection.getSchema();
     }
 
     @Override

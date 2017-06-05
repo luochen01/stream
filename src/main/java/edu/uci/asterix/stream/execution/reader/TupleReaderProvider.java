@@ -16,11 +16,13 @@ public class TupleReaderProvider {
 
     }
 
-    public ITupleReader create(InputFormat format, StructType schema, InputStream input)
+    public ITupleReader create(InputFormat format, StructType sourceSchema, StructType outputSchema, InputStream input)
             throws IOException, ParseException {
         switch (format) {
             case JSON:
-                return new JsonReader(schema, input);
+                return new JsonReader(sourceSchema, outputSchema, input);
+            case CSV:
+                return new CSVReader(sourceSchema, outputSchema, input);
             default:
                 throw new UnsupportedOperationException("Unsupported input format " + format);
         }

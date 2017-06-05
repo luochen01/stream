@@ -1,7 +1,7 @@
 package edu.uci.asterix.stream.planner;
 
+import edu.uci.asterix.stream.api.QueryContext;
 import edu.uci.asterix.stream.catalog.Table;
-import edu.uci.asterix.stream.execution.DefaultSystemTimeProvider;
 import edu.uci.asterix.stream.execution.operators.FilterOperator;
 import edu.uci.asterix.stream.execution.operators.GroupbyOperator;
 import edu.uci.asterix.stream.execution.operators.HashJoinOperator;
@@ -9,7 +9,7 @@ import edu.uci.asterix.stream.execution.operators.LimitOperator;
 import edu.uci.asterix.stream.execution.operators.LoopJoinOperator;
 import edu.uci.asterix.stream.execution.operators.Operator;
 import edu.uci.asterix.stream.execution.operators.ProjectOperator;
-import edu.uci.asterix.stream.execution.operators.SensorToObservationStreamOperator;
+import edu.uci.asterix.stream.execution.operators.SensorToStreamOperator;
 import edu.uci.asterix.stream.execution.operators.SortOperator;
 import edu.uci.asterix.stream.execution.operators.TableScanOperator;
 import edu.uci.asterix.stream.execution.operators.WindowOperator;
@@ -34,10 +34,10 @@ import edu.uci.asterix.stream.logical.UnaryLogicalPlan;
  */
 public class QueryPlanner {
 
-    public static final QueryPlanner INSTANCE = new QueryPlanner();
+    private final QueryContext context;
 
-    private QueryPlanner() {
-
+    public QueryPlanner(QueryContext context) {
+        this.context = context;
     }
 
     public Operator plan(LogicalPlan plan) {
@@ -90,8 +90,10 @@ public class QueryPlanner {
         } else if (plan instanceof LogicalStreamScan) {
             LogicalStreamScan streamScan = (LogicalStreamScan) plan;
             Operator child = plan(streamScan.getTable().getLogicalPlan());
-            Operator streamOperator = new SensorToObservationStreamOperator(child, streamScan);
-            Operator windowOperator = new WindowOperator(streamOperator, streamScan, new DefaultSystemTimeProvider());
+            Operator streamOperator = new SensorToStreamOperator(child, streamScan,
+                    context.getConfig().createSensorStreamEvaluator(), context.getConfig().createStreamConnector());
+            Operator windowOperator = new WindowOperator(streamOperator, streamScan,
+                    context.getConfig().createTimeProvider());
             return windowOperator;
         }
         throw new IllegalArgumentException("Unknown LogicalScan " + plan);
