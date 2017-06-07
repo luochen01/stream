@@ -1,2 +1,2 @@
 # stream
-A simple stream processing engine built with Apache Calcite
+A simple stream processing engine
