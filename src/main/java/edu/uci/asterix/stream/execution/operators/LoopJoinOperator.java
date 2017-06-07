@@ -37,7 +37,7 @@ public class LoopJoinOperator extends BinaryOperator<LogicalJoin> {
                 Tuple leftTuple = leftItr.next();
                 joinedTuple.left = leftTuple;
                 joinedTuple.right = rightTuple;
-                if ((boolean) condition.eval(joinedTuple)) {
+                if (condition == null || (boolean) condition.eval(joinedTuple)) {
                     return Tuple.merge(leftTuple, rightTuple, getSchema());
                 }
             }

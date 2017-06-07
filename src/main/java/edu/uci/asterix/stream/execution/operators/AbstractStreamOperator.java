@@ -58,4 +58,15 @@ public abstract class AbstractStreamOperator<T extends LogicalPlan> implements O
 
     protected abstract void printContent(StringBuilder sb);
 
+    @Override
+    public String getWindow() {
+        Operator[] children = children();
+        for (Operator child : children) {
+            if (child.getWindow() != null) {
+                return child.getWindow();
+            }
+        }
+        return null;
+    }
+
 }

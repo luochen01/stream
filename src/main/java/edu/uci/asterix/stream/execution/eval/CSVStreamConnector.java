@@ -4,38 +4,39 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import edu.uci.asterix.stream.execution.Tuple;
+import edu.uci.asterix.stream.execution.reader.CSVReader;
 import edu.uci.asterix.stream.execution.reader.ITupleReader;
-import edu.uci.asterix.stream.execution.reader.JsonReader;
 import edu.uci.asterix.stream.field.StructType;
 
-public class JsonStreamConnector implements IStreamConnector {
+public class CSVStreamConnector implements IStreamConnector {
 
-    private ITupleReader jsonReader;
+    private ITupleReader csvReader;
 
     private final String file;
 
-    public JsonStreamConnector(String file) {
+    public CSVStreamConnector(String file) {
         this.file = file;
     }
 
     @Override
     public void initialize(StructType sourceSchema, StructType outputSchema) throws Exception {
-        this.jsonReader = new JsonReader(sourceSchema, outputSchema, new FileInputStream(file));
+        this.csvReader = new CSVReader(sourceSchema, outputSchema, new FileInputStream(file));
+
     }
 
     @Override
     public Tuple next() {
-        if (jsonReader == null) {
+        if (csvReader == null) {
             throw new IllegalStateException("Connector has not been initialized");
         }
-        return jsonReader.nextTuple();
+        return csvReader.nextTuple();
 
     }
 
     @Override
     public void close() throws IOException {
-        if (jsonReader != null) {
-            jsonReader.close();
+        if (csvReader != null) {
+            csvReader.close();
         }
     };
 

@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import edu.uci.asterix.stream.execution.Tuple;
-import edu.uci.asterix.stream.execution.operators.Operator;
 import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.logical.LogicalPlan;
 
@@ -59,6 +58,11 @@ public class ListOperator implements Operator {
     @Override
     public void print(StringBuilder sb, int level) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getWindow() {
+        return null;
     }
 
 }

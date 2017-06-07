@@ -45,7 +45,7 @@ public class JsonReader extends AbstractTupleReader {
         return null;
     }
 
-    private Object parseJson(Object jsonObj, FieldType type, String fieldName) {
+    public static Object parseJson(Object jsonObj, FieldType type, String fieldName) {
         if (jsonObj == null) {
             return null;
         }
@@ -69,7 +69,7 @@ public class JsonReader extends AbstractTupleReader {
         throw new UnsupportedOperationException("Unknown type " + typeName);
     }
 
-    private Object[] parseArray(JSONArray jsonArray, ArrayType arrayType, String fieldName) {
+    public static Object[] parseArray(JSONArray jsonArray, ArrayType arrayType, String fieldName) {
         Object[] values = new Object[jsonArray.size()];
         FieldType elementType = arrayType.getElementType();
         int i = 0;
@@ -79,7 +79,7 @@ public class JsonReader extends AbstractTupleReader {
         return values;
     }
 
-    private Tuple parseStruct(JSONObject jsonObj, StructType structType) {
+    public static Tuple parseStruct(JSONObject jsonObj, StructType structType) {
         Object[] values = new Object[structType.getFieldCount()];
         List<Field> fields = structType.getFields();
         for (int i = 0; i < values.length; i++) {
@@ -91,7 +91,7 @@ public class JsonReader extends AbstractTupleReader {
 
     }
 
-    private Object parsePrimitive(Object value, FieldType type) {
+    public static Object parsePrimitive(Object value, FieldType type) {
         if (value == null) {
             return null;
         }

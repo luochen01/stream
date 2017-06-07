@@ -1,0 +1,23 @@
+DEFINE SensorCollection  sensor_collection1, sensor_collection2;
+
+DEFINE ObservationStream  observation_stream1, observation_stream2;
+
+sensor_collection1 =
+SELECT *
+FROM Sensor, Infrastructure
+WHERE Sensor.location_id =Infrastructure.region_id;
+
+sensor_collection2 =
+SELECT *
+FROM sensor_collection1 sen
+WHERE sen.`Sensor.id` LIKE "314%";
+
+observation_stream1 = SENSORS_TO_OBSERVATION_STREAM(sensor_collection2);
+
+
+SELECT obs1.payload.client_id as client_id, count(*) AS stream_count, MIN(CAST(sen.coverage_id AS INT)) as min_coverage_id, 
+MAX(CAST(sen.coverage_id AS INT)) as max_coverage_id 
+FROM observation_stream1 obs1 RANGE '60 seconds' SLIDE '5 seconds', Sensor sen
+WHERE obs1.sensor_id = sen.id
+GROUP BY obs1.payload.client_id
+ORDER BY stream_count desc;

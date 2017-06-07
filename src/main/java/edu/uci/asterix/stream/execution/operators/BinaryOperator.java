@@ -47,7 +47,6 @@ public abstract class BinaryOperator<T extends BinaryLogicalPlan> extends Abstra
 
         @Override
         public Object get(int i) {
-            assert (left != null && right != null);
             if (i < leftSchema.getFieldCount()) {
                 return left.get(i);
             } else {

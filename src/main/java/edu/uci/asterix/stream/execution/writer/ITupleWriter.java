@@ -6,7 +6,7 @@ import edu.uci.asterix.stream.execution.Tuple;
 
 public interface ITupleWriter {
 
-    public void write(Tuple tuple) throws IOException;
+    public void write(Tuple tuple, String window) throws IOException;
 
     public void flush() throws IOException;
 

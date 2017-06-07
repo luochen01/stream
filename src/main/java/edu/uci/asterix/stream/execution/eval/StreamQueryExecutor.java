@@ -37,10 +37,11 @@ public class StreamQueryExecutor {
     private void execute(Operator root, ITupleWriter writer) {
         while (true) {
             root.initialize();
+            String window = root.getWindow();
             Tuple tuple;
             while ((tuple = root.next()) != null) {
                 try {
-                    writer.write(tuple);
+                    writer.write(tuple, window);
                 } catch (IOException e) {
                     LOGGER.error("Fail to write tuple");
                 }

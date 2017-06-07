@@ -10,8 +10,7 @@ import edu.uci.asterix.stream.conf.StreamConfig;
 
 public class Utils {
 
-    private final static SimpleDateFormat timeFormat = new SimpleDateFormat(StreamConfig.Instance.streamTimeFormat(),
-            Locale.US);
+    private final static ThreadLocal<SimpleDateFormat> formatLocal = new ThreadLocal<>();
 
     public static <T> String format(Collection<T> list, String delim) {
         StringBuilder sb = new StringBuilder();
@@ -30,7 +29,7 @@ public class Utils {
             return -1;
         } else {
             try {
-                return timeFormat.parse(timestamp).getTime();
+                return getDateFormat().parse(timestamp).getTime();
             } catch (ParseException e) {
                 return -1;
             }
@@ -38,9 +37,18 @@ public class Utils {
     }
 
     public static String getTimeString(long timestamp) {
-        SimpleDateFormat format = new SimpleDateFormat(StreamConfig.Instance.streamTimeFormat(), Locale.US);
         Date date = new Date(timestamp);
-        return format.format(date);
+        return getDateFormat().format(date);
+    }
+
+    private static SimpleDateFormat getDateFormat() {
+        SimpleDateFormat format = formatLocal.get();
+        if (format == null) {
+            format = new SimpleDateFormat(StreamConfig.Instance.streamTimeFormat(), Locale.US);
+            formatLocal.set(format);
+        }
+        return format;
+
     }
 
 }

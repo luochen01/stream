@@ -35,23 +35,23 @@ public class Avg extends AggregateExpr {
     public Object compute(GroupbyKey key, Object currentValue, Tuple input) {
 
         Object value = child.eval(input);
-        if (currentValue == null) {
-            return value;
-        }
         if (value == null) {
             return currentValue;
         }
-
         int totalSlot = 1;
         if (groupCounts.get(key) != null) {
             totalSlot = groupCounts.get(key) + 1;
         }
         groupCounts.put(key, totalSlot);
 
+        if (currentValue == null) {
+            return value;
+        }
+
         if (child.getResultType().getFieldTypeName() == FieldTypeName.INTEGER) {
-            return ((int) currentValue + (int) value) / totalSlot;
+            return ((int) currentValue * (totalSlot - 1) + (int) value) / totalSlot;
         } else {
-            return ((double) currentValue + (double) value) / totalSlot;
+            return ((double) currentValue * (totalSlot - 1) + (double) value) / totalSlot;
         }
     }
 

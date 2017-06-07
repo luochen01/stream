@@ -41,4 +41,6 @@ public interface Operator {
      */
     public void reset();
 
+    public String getWindow();
+
 }

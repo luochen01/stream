@@ -93,7 +93,7 @@ public class Catalog {
         infrastructureType.addField(new Field("description", PrimitiveType.get(FieldTypeName.STRING)));
         Catalog.INSTANCE.addTable(infrastructureType);
 
-        TableImpl infrastructure = new TableImpl("Infrastructure", InputFormat.CSV, "src/test/resources/infra.csv");
+        TableImpl infrastructure = new TableImpl("Infrastructure", InputFormat.CSV, "src/main/resources/data/infra.csv");
         infrastructure.addField(new Field("name", PrimitiveType.get(FieldTypeName.STRING)));
         infrastructure.addField(new Field("type", PrimitiveType.get(FieldTypeName.STRING)));
         infrastructure.addField(new Field("semantic_entity_id", PrimitiveType.get(FieldTypeName.STRING)));
@@ -125,7 +125,7 @@ public class Catalog {
         sensorType.addField(new Field("payloadSchema", PrimitiveType.get(FieldTypeName.STRING)));
         Catalog.INSTANCE.addTable(sensorType);
 
-        TableImpl sensor = new TableImpl("Sensor", InputFormat.CSV, "src/test/resources/sensors.csv");
+        TableImpl sensor = new TableImpl("Sensor", InputFormat.CSV, "src/main/resources/data/sensors.csv");
         sensor.addField(new Field("id", PrimitiveType.get(FieldTypeName.STRING)));
         sensor.addField(new Field("name", PrimitiveType.get(FieldTypeName.STRING)));
         sensor.addField(new Field("sensorIP", PrimitiveType.get(FieldTypeName.STRING)));

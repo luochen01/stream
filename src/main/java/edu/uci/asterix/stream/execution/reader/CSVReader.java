@@ -9,28 +9,30 @@ import java.util.List;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import edu.uci.asterix.stream.exception.StreamExecutionException;
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.field.Field;
 import edu.uci.asterix.stream.field.FieldType;
 import edu.uci.asterix.stream.field.StructType;
 
 public class CSVReader extends AbstractTupleReader {
+    private final static Logger LOGGER = LoggerFactory.getLogger(CSVReader.class);
 
     private Iterator<CSVRecord> iterator;
     private CSVParser parser;
 
+    private final JSONParser jsonParser;
+
     public CSVReader(StructType sourceSchema, StructType outputSchema, InputStream input) throws IOException {
         super(sourceSchema, outputSchema, input);
-        sourceSchema.getFields().forEach(field -> {
-            if (!field.getFieldType().isPrimitive()) {
-                throw new StreamExecutionException(
-                        "Field " + field.getFieldName() + " with complex type is not supported by CSV reader");
-            }
-        });
         parser = CSVFormat.DEFAULT.withHeader().parse(new InputStreamReader(input));
+        jsonParser = new JSONParser();
         iterator = parser.iterator();
+
     }
 
     @Override
@@ -48,15 +50,15 @@ public class CSVReader extends AbstractTupleReader {
             Field field = fields.get(i);
             String value = record.get(field.getFieldName());
             try {
-                values[i] = parseCSVValue(value, field.getFieldType());
+                values[i] = parseCSVValue(value, field.getFieldType(), field.getFieldName());
             } catch (Exception e) {
-
+                LOGGER.warn("Ignored illegal value {} for {}", value, field.getFieldName());
             }
         }
         return new Tuple(outputSchema, values);
     }
 
-    private Object parseCSVValue(String value, FieldType type) {
+    private Object parseCSVValue(String value, FieldType type, String fieldName) throws ParseException {
         if (value == null || value.equals("NULL")) {
             return null;
         }
@@ -69,8 +71,11 @@ public class CSVReader extends AbstractTupleReader {
                 return Boolean.valueOf(value);
             case STRING:
                 return value;
+            case ARRAY:
+            case STRUCT:
+                return JsonReader.parseJson(jsonParser.parse(value), type, fieldName);
             default:
-                throw new UnsupportedOperationException("Unknown primitive type " + type);
+                throw new UnsupportedOperationException("Unknown type " + type);
         }
     }
 

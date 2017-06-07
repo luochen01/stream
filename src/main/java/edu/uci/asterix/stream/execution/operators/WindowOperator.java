@@ -12,6 +12,7 @@ import edu.uci.asterix.stream.execution.SystemTimeProvider;
 import edu.uci.asterix.stream.execution.Tuple;
 import edu.uci.asterix.stream.expr.Window;
 import edu.uci.asterix.stream.expr.fields.FieldAccess;
+import edu.uci.asterix.stream.field.StructType;
 import edu.uci.asterix.stream.logical.LogicalStreamScan;
 import edu.uci.asterix.stream.utils.Utils;
 
@@ -42,15 +43,17 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
      * (slideTimestampEnd + slide)
      * while slideTimestampBegin is set as slideTimestampEnd - window.range
      */
-    protected long slideTimestampBegin;
+    protected volatile long slideTimestampBegin = -1;
 
-    protected long slideTimestampEnd;
+    protected volatile long slideTimestampEnd = -1;
 
     /**
      * Records the begin timestamp of the next sliding window.
      * All tuples with timestamp < nextSliceTimestampBegin can be safely removed.
      */
-    protected long nextSlideTimestampBegin;
+    protected volatile long nextSlideTimestampBegin = -1;
+
+    protected long processBegin;
 
     protected boolean needSleep = false;
 
@@ -59,6 +62,10 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
     protected int consumedTuples = 0;
 
     protected Iterator<Tuple> iterator;
+
+    protected StructType schema;
+
+    protected String currentWindow;
 
     public WindowOperator(Operator child, LogicalStreamScan logicalStreamScan, SystemTimeProvider timeProvider) {
         super(logicalStreamScan);
@@ -79,11 +86,37 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
             @Override
             public void run() {
                 Tuple tuple = null;
+                //retrieve the first tuple
+                while ((tuple = child.next()) != null && slideTimestampEnd == -1) {
+                    long timestamp = getTupleTimestamp(tuple);
+                    slideTimestampEnd = timestamp;
+                }
+                logger.info("Stream slide window begins at {}", Utils.getTimeString(slideTimestampEnd * 1000));
+
+                synchronized (WindowOperator.this) {
+                    WindowOperator.this.notifyAll();
+                }
+
                 while ((tuple = child.next()) != null) {
-                    bufferQueue.add(tuple);
+                    long timestamp = getTupleTimestamp(tuple);
+                    while (timestamp > slideTimestampEnd + window.getSlide()) {
+                        synchronized (WindowOperator.this) {
+                            try {
+                                logger.info("Intake thread starts to sleep, since {} exceeds the next slide window...",
+                                        Utils.getTimeString(timestamp * 1000));
+                                WindowOperator.this.wait();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    if (timestamp >= nextSlideTimestampBegin) {
+                        bufferQueue.add(tuple);
+                    }
                 }
             }
         });
+
     }
 
     @Override
@@ -102,7 +135,18 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
 
         this.intakeThread.start();
 
-        slideTimestampEnd = timeProvider.currentTimeMillis() / 1000;
+        this.processBegin = timeProvider.currentTimeMillis();
+        logger.info("Start waiting for the first stream tuple to come...");
+        //first tuple has not come...
+        while (slideTimestampEnd == -1) {
+            synchronized (this) {
+                try {
+                    this.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         sleep();
         internalReset();
     }
@@ -171,13 +215,19 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
 
     protected void sleep() {
         long nextSlidetimestampEnd = slideTimestampEnd + window.getSlide();
+        logger.info("Notify intake thread for the next time window {} to {}",
+                Utils.getTimeString(slideTimestampEnd * 1000), Utils.getTimeString(nextSlidetimestampEnd * 1000));
+        synchronized (this) {
+            this.notifyAll();
+        }
         try {
-            long currentTimestamp = timeProvider.currentTimeMillis() / 1000;
-            if (nextSlidetimestampEnd > currentTimestamp) {
-                logger.warn("Window Operator is about to sleep for {}s", nextSlidetimestampEnd - currentTimestamp);
-                Thread.sleep((nextSlidetimestampEnd - currentTimestamp) * 1000);
+            long processEnd = timeProvider.currentTimeMillis();
+            long sleepTime = window.getSlide() * 1000 - (processEnd - processBegin);
+            if (sleepTime > 0) {
+                logger.warn("Window Operator is about to sleep for {}ms", sleepTime);
+                Thread.sleep(sleepTime);
             } else {
-                logger.warn("Window Operator is lagged for {}s", currentTimestamp - nextSlidetimestampEnd);
+                logger.warn("Window Operator is lagged for {}ms", sleepTime);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -192,7 +242,11 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
         slideTimestampEnd = slideTimestampEnd + window.getSlide();
         slideTimestampBegin = slideTimestampEnd - window.getRange();
         nextSlideTimestampBegin = slideTimestampBegin + window.getSlide();
+        processBegin = timeProvider.currentTimeMillis();
         consumedTuples = 0;
+
+        currentWindow = "[" + Utils.getTimeString(slideTimestampBegin * 1000) + ","
+                + Utils.getTimeString(slideTimestampEnd * 1000) + "]";
 
         iterator = bufferQueue.iterator();
     }
@@ -208,4 +262,8 @@ public class WindowOperator extends AbstractStreamOperator<LogicalStreamScan> {
         }
     }
 
+    @Override
+    public String getWindow() {
+        return currentWindow;
+    }
 }
